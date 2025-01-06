@@ -8,8 +8,12 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    screens: {
-      "2xl": "1354px",
+    container: {
+      center: true,
+      // padding: "2rem",
+      screens: {
+        "2xl": "1354px",
+      },
     },
     extend: {
       colors: {
