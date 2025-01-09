@@ -8,7 +8,7 @@ import Image from "next/image";
 
 export default function Sidebar() {
   return (
-    <div className="w-[88px] p-4 pb-6 bg-white border-r border-gray-200 h-[100vh] flex flex-col justify-between items-center shadow-[10px_0_15px_-3px_rgba(0,0,0,0.1),4px_0_6px_-2px_rgba(0,0,0,0.05)] z-10">
+    <div className="w-[88px] p-4 pb-6 bg-white border-r border-gray-200 h-screen flex flex-col justify-between items-center shadow-[10px_0_15px_-3px_rgba(0,0,0,0.1),4px_0_6px_-2px_rgba(0,0,0,0.05)] z-10">
       <div>
         <Image
           src="/images/logo.svg"

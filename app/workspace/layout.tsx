@@ -6,7 +6,7 @@ export default async function Layout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden">
       <Sidebar />
       <div className="flex-1">{children}</div>
     </div>

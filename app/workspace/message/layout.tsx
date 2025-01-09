@@ -6,12 +6,12 @@ export default async function Layout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen">
-      <div className="w-[250px]">
+    <div className="flex h-screen">
+      <div className="w-[250px] border-r">
         <MessagePanel />
       </div>
 
-      <div className="flex-1">{children}</div>
+      <div className="flex-1 ">{children}</div>
     </div>
   );
 }

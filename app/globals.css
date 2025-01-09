@@ -2,13 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --primary: #615ef0;
-}
-
-body {
-}
-
 @layer utilities {
   .text-balance {
     text-wrap: balance;
@@ -23,7 +16,7 @@ body {
     --card-foreground: 20 14.3% 4.1%;
     --popover: 0 0% 100%;
     --popover-foreground: 20 14.3% 4.1%;
-    --primary: 24 9.8% 10%;
+    --primary: 241, 83%, 65%;
     --primary-foreground: 60 9.1% 97.8%;
     --secondary: 60 4.8% 95.9%;
     --secondary-foreground: 24 9.8% 10%;
@@ -78,4 +71,22 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #c7c7c7;
+  border-radius: 4px;
+}
+
+.custom-scrollbar-x::-webkit-scrollbar {
+  height: 4px;
+}
+
+.custom-scrollbar-x::-webkit-scrollbar-thumb {
+  background-color: #c7c7c7;
+  border-radius: 4px;
 }
