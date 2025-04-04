@@ -11,6 +11,9 @@ import auth from "@/apiRequest/auth";
 import useUserDetailStore, { UserType } from "@/stores/user-store";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { DeviceType } from "@/types";
+import { getDevice } from "@/utils/getDevice";
 
 const formSchema = z.object({
   fullname: z.string().min(2, {
@@ -26,6 +29,22 @@ export default function Page() {
   const saveUser = useUserDetailStore((state) => state.saveUser);
   const { toast } = useToast();
   const router = useRouter();
+
+  const [device, setDevice] = useState<DeviceType | null>(null);
+
+  useEffect(() => {
+    // Chỉ chạy trên client-side
+    if (typeof window !== "undefined") {
+      import("device-uuid").then(({ DeviceUUID }) => {
+        const du = new DeviceUUID().parse();
+        setDevice({
+          type: du.browser,
+          device_token: getDevice(du),
+        });
+      });
+    }
+  }, []);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -36,13 +55,15 @@ export default function Page() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!device?.type || !device?.device_token) return;
+
     const { email, password, fullname } = values;
     const response = await auth.register({
       email,
       password,
       fullname,
-      type: "Mobile",
-      device_token: "32435ggbd5",
+      type: device.type,
+      device_token: device.device_token,
     });
 
     if (response) {
