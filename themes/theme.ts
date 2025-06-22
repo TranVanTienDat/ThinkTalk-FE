@@ -5,16 +5,10 @@ declare module "@mui/joy/styles" {
   interface Palette {
     primary: PaletteRange;
     secondary: PaletteRange;
-    cornflowerBlue: PaletteRange;
-    text: PaletteRange & {
-      primary: string;
-      secondary: string;
-      tertiary: string;
-    };
     custom: PaletteRange & {
       cloudGray: string;
       skyBlueTint: string;
-      softWhite: string;
+      softBlue: string;
       hotPink: string;
       textDisabled: string;
       cornflower8: string;
@@ -23,13 +17,7 @@ declare module "@mui/joy/styles" {
       lavenderGray: string;
       textInputQuest: string;
       fieryRed: string;
-      whiteTransparent24: string;
-      whiteTransparent64: string;
-      whiteTransparent48: string;
-    };
-    gradient: {
-      primary: string;
-      bg: string;
+      lightGray100: string;
     };
     icon: PaletteRange & {
       primary: string;
@@ -37,13 +25,18 @@ declare module "@mui/joy/styles" {
   }
 }
 
-// const defaultTheme = extendTheme()
-export const generateThemeOptions = (): CssVarsThemeOptions => {
+const generateThemeOptions = (): CssVarsThemeOptions => {
   return {
     fontFamily: {
-      body: "Afacad",
-      code: "Afacad",
-      display: "Afacad",
+      body: "Roboto, sans-serif",
+      display: "Roboto, sans-serif",
+    },
+    fontWeight: {
+      xs: 400,
+      sm: 500,
+      md: 600,
+      lg: 700,
+      xl: 800,
     },
 
     colorSchemes: {
@@ -51,14 +44,8 @@ export const generateThemeOptions = (): CssVarsThemeOptions => {
         palette: {
           primary: colors.primary,
           secondary: colors.secondary,
-          cornflowerBlue: colors.cornflowerBlue,
-          text: colors.text,
           custom: colors.custom,
           icon: colors.icon,
-          gradient: {
-            primary: `linear-gradient(90deg, ${colors.secondary[500]}, ${colors.cornflowerBlue[500]})`,
-            bg: `linear-gradient(210deg, ${colors.custom.cloudGray} 11.55%, ${colors.custom.skyBlueTint} 72.23%)`,
-          },
         },
       },
     },
@@ -66,7 +53,7 @@ export const generateThemeOptions = (): CssVarsThemeOptions => {
       JoySelect: {
         styleOverrides: {
           root: {
-            color: colors.text.secondary,
+            color: colors.secondary[200],
             fontSize: "14px",
             fontWeight: 400,
             borderRadius: "12px",
@@ -88,8 +75,8 @@ export const generateThemeOptions = (): CssVarsThemeOptions => {
         styleOverrides: {
           root: {
             border: "none",
-            boxShadow: "0px 6px 12px -2px rgba(21, 21, 21, 0.08)",
-            color: colors.text.secondary,
+            boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+            color: colors.secondary[200],
             padding: 0,
           },
         },
@@ -106,11 +93,11 @@ export const generateThemeOptions = (): CssVarsThemeOptions => {
       JoyInput: {
         styleOverrides: {
           root: {
-            color: colors.text.primary,
+            color: colors.secondary[100],
             fontSize: "14px",
             fontWeight: 400,
             borderRadius: "12px",
-            borderColor: colors.text.tertiary,
+            borderColor: colors.secondary[300],
             height: "40px",
             "&:hover": {
               backgroundColor: "transparent",
@@ -122,12 +109,51 @@ export const generateThemeOptions = (): CssVarsThemeOptions => {
         styleOverrides: {
           root: {
             borderRadius: "12px",
-            height: "40px",
+            height: "36px",
             fontWeight: 600,
-            minWidth: 80,
+            padding: "12px",
+            "&:hover": {
+              color: colors.primary[700],
+              backgroundColor: colors.custom.softBlue,
+            },
+          },
+        },
+      },
+      JoyIconButton: {
+        styleOverrides: {
+          root: {
+            "&:hover": {
+              color: colors.primary[700],
+              backgroundColor: colors.custom.softBlue,
+            },
+          },
+        },
+      },
+      JoyTab: {
+        styleOverrides: {
+          root: {
+            borderRadius: "6px",
+            width: "100%",
+            paddingX: "8px",
+            "&.Mui-selected": {
+              backgroundColor: colors.custom.softBlue,
+              color: colors.primary[700],
+            },
+            '&:not(.Mui-selected, [aria-selected="true"]):hover': {
+              backgroundColor: colors.custom.softBlue,
+              color: colors.primary[700],
+            },
+          },
+        },
+      },
+      JoyTabPanel: {
+        styleOverrides: {
+          root: {
+            padding: "24px",
           },
         },
       },
     },
   };
 };
+export const theme = extendTheme(generateThemeOptions());

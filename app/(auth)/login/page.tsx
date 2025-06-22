@@ -1,5 +1,4 @@
 "use client";
-import { ButtonLoading } from "@/components/ButtonLoading";
 import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
@@ -14,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getDevice } from "@/utils/getDevice";
 import { DeviceType } from "@/types";
+import { ButtonLoading } from "@/components/base/button-loading";
 const formSchema = z.object({
   // fullname: z.string().min(2, {
   //   message: "Có vẻ như tên của bạn quá ngắn",

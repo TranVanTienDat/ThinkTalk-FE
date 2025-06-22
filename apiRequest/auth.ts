@@ -18,9 +18,9 @@ const auth = {
 
   getMe: async () => {
     try {
-      return await servicesApi.post("/auth/get-me");
+      return await servicesApi.get("/auth/get-me");
     } catch (error) {
-      console.log(error);
+      throw error;
     }
   },
 };
