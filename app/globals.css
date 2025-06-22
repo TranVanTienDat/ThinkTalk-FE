@@ -8,7 +8,7 @@
   }
 }
 
-@layer base {
+/* @layer base {
   :root {
     --background: 0 0% 100%;
     --foreground: 20 14.3% 4.1%;
@@ -71,8 +71,11 @@
   body {
     @apply bg-background text-foreground;
   }
+} */
+.custom-scrollbar {
+  position: relative;
+  z-index: 1000;
 }
-
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
@@ -80,6 +83,9 @@
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: #c7c7c7;
   border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent; /* color of the tracking area */
 }
 
 .custom-scrollbar-x::-webkit-scrollbar {
@@ -89,4 +95,66 @@
 .custom-scrollbar-x::-webkit-scrollbar-thumb {
   background-color: #c7c7c7;
   border-radius: 4px;
+}
+/* test color */
+.color {
+  /* Primary Colors */
+  color: #f2f1f8;
+  color: #e5e2f2;
+  color: #cac5e5;
+  color: #b0a9d8;
+  color: #958ccb;
+  color: #7b6fbe;
+  color: #635999;
+  color: #4b4374;
+  color: #322e4e;
+  color: #1a1829;
+
+  /* Secondary Colors */
+  color: #ffedf5;
+  color: #ffdceb;
+  color: #ffb8d8;
+  color: #ff95c4;
+  color: #ff71b1;
+  color: #ff4e9d;
+  color: #d33e81;
+  color: #a82f65;
+  color: #7c1f49;
+  color: #51102d;
+
+  /* CornflowerBlue Colors */
+  color: #eff3ff;
+  color: #dee7ff;
+  color: #beceff;
+  color: #9db6ff;
+  color: #7d9dff;
+  color: #5c85ff;
+  color: #4a6dd6;
+  color: #3755ad;
+  color: #253d85;
+  color: #12255c;
+
+  /* Text Colors */
+  color: #181818;
+  color: #646464;
+  color: #b7b5be;
+
+  /* Custom Colors */
+  color: #9fa6ad;
+  color: #7b6fbe;
+  color: #5c85ff14;
+  color: #5c85ff3d;
+  color: #edeff4cc;
+  color: #e6eefdcc;
+  color: #ffffffa3;
+  color: #ff4e9d;
+  color: #e9e9e9;
+  color: #e4e2f2;
+  color: #ff2b1f;
+  color: #ffffff3d;
+  color: #ffffffa3;
+  color: #f5f5f5;
+
+  /* Icon Color */
+  color: #7b6fbe;
 }

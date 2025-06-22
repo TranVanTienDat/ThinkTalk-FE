@@ -1,5 +1,4 @@
 "use client";
-import { ButtonLoading } from "@/components/ButtonLoading";
 import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
@@ -11,7 +10,10 @@ import auth from "@/apiRequest/auth";
 import useUserDetailStore, { UserType } from "@/stores/user-store";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-
+import { useEffect, useState } from "react";
+import { getDevice } from "@/utils/getDevice";
+import { DeviceType } from "@/types";
+import { ButtonLoading } from "@/components/base/button-loading";
 const formSchema = z.object({
   // fullname: z.string().min(2, {
   //   message: "Có vẻ như tên của bạn quá ngắn",
@@ -24,6 +26,21 @@ const formSchema = z.object({
 
 export default function Page() {
   const saveUser = useUserDetailStore((state) => state.saveUser);
+  const [device, setDevice] = useState<DeviceType | null>(null);
+
+  useEffect(() => {
+    // Chỉ chạy trên client-side
+    if (typeof window !== "undefined") {
+      import("device-uuid").then(({ DeviceUUID }) => {
+        const du = new DeviceUUID().parse();
+        setDevice({
+          type: du.browser,
+          device_token: getDevice(du),
+        });
+      });
+    }
+  }, []);
+
   const { toast } = useToast();
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
@@ -35,12 +52,14 @@ export default function Page() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!device?.type || !device?.device_token) return;
+
     const { email, password } = values;
     const response = await auth.login({
       email,
       password,
-      type: "Mobile",
-      device_token: "32435ggbd5",
+      type: device.type,
+      device_token: device.device_token,
     });
 
     if (response) {
