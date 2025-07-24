@@ -1,4 +1,4 @@
-import { Conversation, Notification } from "@/types";
+import { Message, MessageType, Notification } from "@/types";
 
 export const notificationMockData: Notification[] = [
   {
@@ -194,7 +194,7 @@ export const getNotificationMockData = (): Promise<
 
 // conversationMockData.ts
 
-export const conversationMockData: Conversation[] = [
+export const conversationMockData: any[] = [
   {
     id: 1,
     name: "Nhóm bạn thân, anh em mình cứ thế thôi heheheeh",
@@ -434,5 +434,164 @@ export const conversationMockData: Conversation[] = [
     isRead: false,
     createdAt: "2025-05-05T12:00:00Z",
     updatedAt: "2025-05-23T21:30:00Z",
+  },
+];
+
+export const users = [
+  {
+    name: "Steve E.",
+    username: "@steveEberger",
+    avatar: "https://i.pravatar.cc/150?u=1",
+    online: true,
+  },
+  {
+    name: "Katherine Moss",
+    username: "@kathy",
+    avatar: "https://i.pravatar.cc/150?u=2",
+    online: false,
+  },
+  {
+    name: "Phoenix Baker",
+    username: "@phoenix",
+    avatar: "https://i.pravatar.cc/150?u=3",
+    online: true,
+  },
+  {
+    name: "Eleanor Pena",
+    username: "@eleanor",
+    avatar: "https://i.pravatar.cc/150?u=4",
+    online: false,
+  },
+  {
+    name: "Kenny Peterson",
+    username: "@kenny",
+    avatar: "https://i.pravatar.cc/150?u=5",
+    online: true,
+  },
+  {
+    name: "Al Sanders",
+    username: "@al",
+    avatar: "https://i.pravatar.cc/150?u=6",
+    online: true,
+  },
+  {
+    name: "Melissa Van Der Berg",
+    username: "@melissa",
+    avatar: "https://i.pravatar.cc/150?u=7",
+    online: false,
+  },
+];
+
+export const chatsMockData: Partial<Message>[] = [
+  {
+    id: "1",
+    createdAt: "Wednesday 9:00am",
+    updatedAt: "Wednesday 9:00am",
+    deletedAt: null,
+    content: "Hi Olivia, I am currently working on the project.",
+    senderId: "@steveEberger",
+    type: MessageType.TEXT,
+  },
+  {
+    id: "2",
+    createdAt: "Wednesday 9:10am",
+    updatedAt: "Wednesday 9:10am",
+    deletedAt: null,
+    content: "That sounds great, Mabel! Keep up the good work.",
+    senderId: "you",
+    type: MessageType.TEXT,
+  },
+  {
+    id: "3",
+    createdAt: "Wednesday 11:30am",
+    updatedAt: "Wednesday 11:30am",
+    deletedAt: null,
+    content: "I will send the draft by end of the day.",
+    senderId: "@steveEberger",
+    type: MessageType.TEXT,
+  },
+  {
+    id: "4",
+    createdAt: "Wednesday 2:00pm",
+    updatedAt: "Wednesday 2:00pm",
+    deletedAt: null,
+    content: "Sure, I will be waiting for it.",
+    senderId: "you",
+    type: MessageType.TEXT,
+  },
+  {
+    id: "5",
+    createdAt: "Wednesday 4:30pm",
+    updatedAt: "Wednesday 4:30pm",
+    deletedAt: null,
+    content: "Just a heads up, I am about to send the draft.",
+    senderId: "@steveEberger",
+    type: MessageType.TEXT,
+  },
+  {
+    id: "6",
+    createdAt: "Thursday 10:16am",
+    updatedAt: "Thursday 10:16am",
+    deletedAt: null,
+    content:
+      "Thanks Olivia! Almost there. I'll work on making those changes you suggested and will shoot it over.",
+    senderId: "@steveEberger",
+    type: MessageType.TEXT,
+  },
+  {
+    id: "7",
+    createdAt: "Thursday 11:40am",
+    updatedAt: "Thursday 11:40am",
+    deletedAt: null,
+    content:
+      "Hey Olivia, I've finished with the requirements doc! I made some notes in the gdoc as well for Phoenix to look over.",
+    senderId: "@steveEberger",
+    type: MessageType.TEXT,
+  },
+  {
+    id: "8",
+    createdAt: "Thursday 11:40am",
+    updatedAt: "Thursday 11:40am",
+    deletedAt: null,
+    content: "Tech requirements.pdf",
+    senderId: "@steveEberger",
+    type: MessageType.FILE,
+  },
+  {
+    id: "9",
+    createdAt: "Thursday 11:41am",
+    updatedAt: "Thursday 11:41am",
+    deletedAt: null,
+    content: "Awesome! Thanks. I'll look at this today.",
+    senderId: "you",
+    type: MessageType.TEXT,
+  },
+  {
+    id: "10",
+    createdAt: "Thursday 11:44am",
+    updatedAt: "Thursday 11:44am",
+    deletedAt: null,
+    content: "No rush though — we still have to wait for Lana's designs.",
+    senderId: "@steveEberger",
+    type: MessageType.TEXT,
+  },
+  {
+    id: "11",
+    createdAt: "Today 2:20pm",
+    updatedAt: "Today 2:20pm",
+    deletedAt: null,
+    content:
+      "Hey Olivia, can you please review the latest design when you can?",
+    senderId: "@steveEberger",
+    type: MessageType.TEXT,
+  },
+  {
+    id: "12",
+    createdAt: "Just now",
+    updatedAt: "Just now",
+    deletedAt: null,
+    content: "Sure thing, I'll have a look today. They're looking great!",
+    senderId: "you",
+    type: MessageType.TEXT,
   },
 ];

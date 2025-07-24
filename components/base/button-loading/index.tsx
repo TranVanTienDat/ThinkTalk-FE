@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { IconButton, IconButtonProps } from "@mui/joy";
 
 import clsx from "clsx";
-import { LoaderCircleIcon } from "lucide-react";
-import React from "react";
+import { LoaderCircleIcon, LucideProps } from "lucide-react";
+import React, { ForwardRefExoticComponent, RefAttributes } from "react";
 
 export const LoadingSnipper = ({
   className,
@@ -44,5 +45,24 @@ export const ButtonLoading = ({
     >
       {isLoading ? <LoadingSnipper className={classNameLoading} /> : title}
     </Button>
+  );
+};
+
+type ButtonIconCustomizeProps = {
+  icon: ForwardRefExoticComponent<
+    Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>
+  >;
+  size?: number;
+  color?: any;
+  handleOnClick?: () => void;
+} & IconButtonProps;
+export const IconButtonCustomize = (props: ButtonIconCustomizeProps) => {
+  return (
+    <IconButton {...props}>
+      {React.createElement(props.icon, {
+        color: props.color,
+        size: props.size,
+      })}
+    </IconButton>
   );
 };

@@ -2,8 +2,9 @@ import { Tabs } from "@mui/joy";
 import Sidebar from "./sidebar";
 import ConversationTab from "./conversation-tab";
 import NotificationTab from "./notification-tab";
+import { memo } from "react";
 
-export default function MainSidebar() {
+const MainSidebar = () => {
   return (
     <Tabs
       aria-label="Vertical tabs"
@@ -22,4 +23,6 @@ export default function MainSidebar() {
       <NotificationTab />
     </Tabs>
   );
-}
+};
+
+export default memo(MainSidebar);

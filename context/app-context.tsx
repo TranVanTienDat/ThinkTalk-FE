@@ -24,7 +24,6 @@ const AppContext = createContext<AppContextValue>({
     createdAt: new Date(),
     updatedAt: new Date(),
     email: "",
-    password: "",
     fullName: "",
     nickname: "",
     avatar: "",

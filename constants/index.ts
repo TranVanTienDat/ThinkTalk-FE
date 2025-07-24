@@ -1,3 +1,4 @@
+import { emojiWithCode } from "@/utils";
 import { Bell, MessageCircle } from "lucide-react";
 
 export const tabItems = [
@@ -5,3 +6,129 @@ export const tabItems = [
   { icon: Bell, size: 20, label: "Notifications" },
   //   { icon: Settings, size: 20, label: "Settings" },
 ];
+const emojiFace = [
+  "😀",
+  "😃",
+  "😄",
+  "😁",
+  "😆",
+  "😅",
+  "😂",
+  "🤣",
+  "😊",
+  "🙂",
+  "😉",
+  "😍",
+  "😘",
+  "😗",
+  "😚",
+  "😋",
+  "😛",
+  "😜",
+  "🤪",
+].map(emojiWithCode);
+
+const emojiSadAngry = [
+  "😔",
+  "😞",
+  "😠",
+  "😡",
+  "🤬",
+  "😭",
+  "😢",
+  "😩",
+  "😫",
+  "😖",
+  "😣",
+  "😓",
+  "😤",
+  "😨",
+  "😱",
+].map(emojiWithCode);
+
+const emojiHand = [
+  "👋",
+  "🤚",
+  "✋",
+  "🖖",
+  "👌",
+  "🤌",
+  "🤏",
+  "✌",
+  "🤞",
+  "🤟",
+  "🤘",
+  "🤙",
+  "👍",
+  "👎",
+  "👏",
+  "🙌",
+  "🫶",
+].map(emojiWithCode);
+
+const emojiAnimals = [
+  "🐶",
+  "🐱",
+  "🐭",
+  "🐹",
+  "🐰",
+  "🦊",
+  "🐻",
+  "🐼",
+  "🐨",
+  "🦁",
+  "🐮",
+  "🐷",
+  "🐸",
+  "🐵",
+  "🐔",
+  "🐧",
+  "🐦",
+  "🐤",
+  "🐣",
+].map(emojiWithCode);
+
+const emojiTravel = [
+  "🚗",
+  "🚕",
+  "🚙",
+  "🚌",
+  "🏎",
+  "🚓",
+  "🚑",
+  "✈️",
+  "🛫",
+  "🛬",
+  "🚀",
+  "🛸",
+  "🚢",
+  "⛵",
+  "🛶",
+].map(emojiWithCode);
+
+const emojiLove = [
+  "❤️",
+  "🧡",
+  "💛",
+  "💚",
+  "💙",
+  "💜",
+  "🖤",
+  "🤍",
+  "🤎",
+  "💕",
+  "💞",
+  "💓",
+  "💗",
+  "💖",
+  "💘",
+].map(emojiWithCode);
+
+export const EMOJI = {
+  face: emojiFace,
+  hand: emojiHand,
+  animals: emojiAnimals,
+  travel: emojiTravel,
+  expression: emojiSadAngry,
+  feeling: emojiLove,
+};

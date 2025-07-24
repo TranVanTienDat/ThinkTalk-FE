@@ -19,16 +19,16 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-axios.interceptors.response.use(
+axiosInstance.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
-    console.error("API Error:", error);
+    console.log("API Error:", error);
     if (error.response.status === 401) {
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
-      window.location.href = "/login";
+      router.push("/login");
       return;
     }
     return error;

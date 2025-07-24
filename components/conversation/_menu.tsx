@@ -1,11 +1,11 @@
-import { Conversation } from "@/types";
 import { Dropdown, IconButton, Menu, MenuButton, MenuItem } from "@mui/joy";
 import { EllipsisVertical } from "lucide-react";
 import { memo } from "react";
 
-type PropsType = Conversation & {
+type PropsType = {
   open: boolean;
   onOpenChange: (event: React.SyntheticEvent | null, isOpen: boolean) => void;
+  id: string;
 };
 
 const ConversationMenu = ({ props }: { props: PropsType }) => {

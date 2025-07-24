@@ -15,6 +15,7 @@ export const colors = {
     "100": "#181818", // header
     "200": "#646464", // body
     "300": "#b7b5be", // placeholder
+    "400": "#F1F1F1",
   },
   custom: {
     textDisabled: "#9fa6ad",

@@ -21,3 +21,26 @@ export const getDurationDate = (dateString: string) => {
 
   return date.format("DD/MM/YYYY");
 };
+
+export const emojiWithCode = (e: string) => {
+  const codePoints = Array.from(e).map(
+    (c) => "U+" + c.codePointAt(0)!.toString(16).toUpperCase()
+  );
+  return {
+    emoji: e,
+    code: codePoints.join(" "),
+  };
+};
+
+export const hasPassedTwoDays = (date: string): boolean => {
+  const now = dayjs();
+  const dateObj = dayjs(date);
+  const diffDays = now.diff(dateObj, "day");
+  return diffDays >= 3;
+};
+
+export const sortDateHandler = (a: string, b: string) => {
+  const dateA = new Date(a);
+  const dateB = new Date(b);
+  return dateA.getTime() - dateB.getTime();
+};

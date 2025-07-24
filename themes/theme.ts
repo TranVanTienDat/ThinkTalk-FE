@@ -153,6 +153,15 @@ const generateThemeOptions = (): CssVarsThemeOptions => {
           },
         },
       },
+      JoySheet: {
+        styleOverrides: {
+          root: {
+            backgroundColor: "white",
+            border: "none",
+            borderWidth: 0,
+          },
+        },
+      },
     },
   };
 };
