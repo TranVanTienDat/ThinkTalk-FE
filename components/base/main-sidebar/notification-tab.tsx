@@ -1,3 +1,5 @@
+"use client";
+
 import InputNotificationSearch from "@/components/notification/input-search";
 import ListNotification from "@/components/notification";
 import { notificationMockData } from "@/constants/mock-data";

@@ -1,4 +1,5 @@
 import { bgImgConfig } from "@/constants/chat.config";
+import useDocumentTitle from "@/hooks/use-document-title";
 import { useConversationInfoStore } from "@/stores/conversation-info-store";
 import { Params } from "@/types";
 import {
@@ -45,6 +46,7 @@ export const Header = ({ params }: { params: Params }) => {
   const data = useStore(useConversationInfoStore, (state) => state.data);
 
   const user = data[params.id];
+  useDocumentTitle(user.name, user.avatar);
   return (
     <Sheet
       sx={{

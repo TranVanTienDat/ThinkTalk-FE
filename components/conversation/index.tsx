@@ -78,7 +78,7 @@ const LastMessageItem = ({
           },
         ]}
       >
-        {getDurationDate(lastMsg.updatedAt)}
+        {getDurationDate(lastMsg.createdAt)}
       </Typography>
     </Box>
   );
@@ -139,7 +139,6 @@ const ConversationItem = ({
 }) => {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
-
   const onOpenChange = useCallback(
     (event: React.SyntheticEvent | null, isOpen: boolean) => {
       setOpen(isOpen);
@@ -154,16 +153,14 @@ const ConversationItem = ({
   return (
     <BoxStyled
       sx={[
-        !open
-          ? {
-              "&:hover .MuiIconButton-root": {
-                display: "flex",
-              },
-              "& .MuiIconButton-root": {
-                display: "none",
-              },
-            }
-          : {},
+        !open && {
+          "&:hover .MuiIconButton-root": {
+            display: "flex",
+          },
+          "& .MuiIconButton-root": {
+            display: "none",
+          },
+        },
         {
           backgroundColor: isActive
             ? theme.palette.custom.softBlue
@@ -181,7 +178,7 @@ const ConversationItem = ({
       <Content id={id} name={name} isRead={isRead} lastMsg={lastMsg} />
       <Badge
         anchorOrigin={{ vertical: "top", horizontal: "left" }}
-        invisible={isRead}
+        invisible={!isRead}
         size="sm"
         sx={{
           "& .MuiBadge-badge": {
@@ -195,12 +192,47 @@ const ConversationItem = ({
     </BoxStyled>
   );
 };
-
 const ConversationItemMemo = memo(ConversationItem);
+
+type RenderConversationProps = {
+  dataFlat: any[];
+  isLoading: boolean;
+  hasNextPage: boolean;
+  bottomRef: (node?: Element | null) => void;
+};
+
+const RenderConversation = ({
+  dataFlat,
+  isLoading,
+  hasNextPage,
+  bottomRef,
+}: RenderConversationProps) => {
+  const { id } = useParams();
+  return (
+    <>
+      {dataFlat.map((co) => (
+        <ConversationItemMemo
+          key={co.id}
+          id={co.id}
+          name={co.name}
+          isRead={co.isRead ?? false}
+          avatar={co.avatar ?? null}
+          lastMsg={co.lastMessage}
+          isActive={(id as string) === co.id}
+        />
+      ))}
+      {isLoading && <ConversationLoading />}
+      {hasNextPage && (
+        <div ref={bottomRef} className="my-3">
+          <Loading type="area" />
+        </div>
+      )}
+    </>
+  );
+};
 
 const ListConversation = () => {
   const { data, isLoading, fetchNextPage, hasNextPage } = useConversations();
-  const { id } = useParams();
   const { addInfo, data: conversationStore } = useStore(
     useConversationInfoStore,
     (state) => state
@@ -211,10 +243,10 @@ const ListConversation = () => {
   });
 
   useEffect(() => {
-    if (inView && hasNextPage && !isLoading) {
+    if (inView) {
       fetchNextPage?.();
     }
-  }, [inView, fetchNextPage, hasNextPage, isLoading]);
+  }, [inView, fetchNextPage]);
 
   useEffect(() => {
     dataFlat.forEach((co) => {
@@ -231,7 +263,6 @@ const ListConversation = () => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationStore, dataFlat]);
-
   return (
     <Box
       className="h-[calc(100vh-186px)] overflow-y-auto custom-scrollbar"
@@ -241,23 +272,12 @@ const ListConversation = () => {
         },
       }}
     >
-      {dataFlat.map((co) => (
-        <ConversationItemMemo
-          key={co.id}
-          id={co.id}
-          name={co.name}
-          isRead={co.isRead ?? false}
-          avatar={co.avatar ?? null}
-          lastMsg={co.lastMessage}
-          isActive={(id as string) === co.id}
-        />
-      ))}
-      {isLoading && <ConversationLoading />}
-      {hasNextPage && (
-        <div ref={ref} className="my-3">
-          <Loading type="area" />
-        </div>
-      )}
+      <RenderConversation
+        dataFlat={dataFlat}
+        isLoading={isLoading}
+        hasNextPage={hasNextPage}
+        bottomRef={ref}
+      />
     </Box>
   );
 };

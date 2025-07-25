@@ -1,15 +1,17 @@
 "use client";
 
+import { useAuthToken } from "@/hooks/use-auth-token";
+import { socketManager } from "@/lib/socket";
+import { message } from "antd";
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
   type ReactNode,
 } from "react";
 import type { Socket } from "socket.io-client";
-import { socketManager } from "@/lib/socket";
-import { useAuthToken } from "@/hooks/use-auth-token";
 
 interface SocketContextType {
   socket: Socket | null;
@@ -27,9 +29,18 @@ export function SocketProvider({
   children: ReactNode;
   autoConnect?: boolean;
 }) {
+  const { token, isHydrated } = useAuthToken();
+  const [messageApi, contextHolder] = message.useMessage();
+
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const { token, isHydrated } = useAuthToken();
+
+  const logError = useCallback(() => {
+    messageApi.open({
+      type: "error",
+      content: "Xảy ra lỗi kết nối với máy chủ. Đang cố gắng kết nối lại.",
+    });
+  }, [messageApi]);
 
   // Auto-set token in socketManager
   useEffect(() => {
@@ -58,13 +69,21 @@ export function SocketProvider({
     const handleDisconnect = () => setIsConnected(false);
 
     socket.on("connect", handleConnect);
-    socket.on("disconnect", handleDisconnect);
+    socket.on("disconnect", () => {
+      logError();
+      handleDisconnect();
+    });
+    socket.on("connect_error", (error) => {
+      console.error("Socket connection error:", error);
+      logError();
+    });
 
     setIsConnected(socket.connected);
 
     return () => {
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
+      socket.off("connect_error");
     };
   }, [socket]);
 
@@ -81,6 +100,7 @@ export function SocketProvider({
         },
       }}
     >
+      {contextHolder}
       {children}
     </SocketContext.Provider>
   );

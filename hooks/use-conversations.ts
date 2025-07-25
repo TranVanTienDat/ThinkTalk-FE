@@ -15,7 +15,6 @@ const fetchConversations = async ({ pageParam = 1 }) => {
 
 export const useConversations = () => {
   // const queryClient = useQueryClient();
-
   return useInfiniteQuery({
     queryKey: ["conversations"],
     queryFn: fetchConversations,
@@ -24,22 +23,4 @@ export const useConversations = () => {
       return lastPage.nextCursor;
     },
   });
-
-  //    useSocketEvent('new-message', (message) => {
-  //   queryClient.setQueryData(["conversations"], (old: any[]) => {
-  //         const updated = old.filter(
-  //           (conv) => conv.id !== message.conversationId
-  //         );
-  //         const conversation = old.find(
-  //           (conv) => conv.id === message.conversationId
-  //         );
-
-  //         if (conversation) {
-  //           conversation.lastMessage = message;
-  //           conversation.updatedAt = new Date().toISOString();
-  //           return [conversation, ...updated]; // Đưa lên đầu mảng
-  //         }
-  //         return old;
-  //       });
-  //    })
 };

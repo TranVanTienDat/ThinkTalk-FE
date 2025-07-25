@@ -22,7 +22,7 @@ export default function Sidebar() {
       >
         <>
           <Image
-            src="/images/logo.svg"
+            src="/images/icon.png"
             alt="Logo"
             width={56}
             height={56}

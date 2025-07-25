@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/form";
 import clsx from "clsx";
 import { HTMLInputTypeAttribute, KeyboardEventHandler, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 type Props = {
   fieldTitle: string;
@@ -35,7 +36,7 @@ export function InputWithLabel({
   prefix = "",
 }: Props) {
   const form = useFormContext();
-
+  console.log("form", form);
   const fieldTitleNoSpaces = fieldTitle.replaceAll(" ", "-");
   useEffect(() => {
     if (!form.getValues(nameInSchema)) {
@@ -71,7 +72,11 @@ export function InputWithLabel({
                   <Input
                     {...field}
                     id={fieldTitleNoSpaces}
-                    className="w-full py-5 text-lg placeholder:text-[14px] placeholder:text-[#B5B7C0] placeholder:font-normal text-[14px]"
+                    className={cn(
+                      "w-full py-5 text-lg placeholder:text-[14px] placeholder:text-[#B5B7C0] placeholder:font-normal text-[14px] shadow-none",
+                      form.formState.errors[nameInSchema] &&
+                        "border-[#F44336] focus-visible:outline-none focus-visible:ring-0"
+                    )}
                     placeholder={placeholder || fieldTitle}
                     readOnly={readOnly}
                     disabled={readOnly}
@@ -91,7 +96,7 @@ export function InputWithLabel({
               </div>
             </div>
 
-            <FormMessage />
+            <FormMessage className="text-[#D32F2F]" />
           </FormItem>
         );
       }}

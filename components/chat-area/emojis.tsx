@@ -12,6 +12,9 @@ import {
 } from "lucide-react";
 import { memo } from "react";
 import { IconButtonCustomize } from "../base/button-loading";
+type EmojiPopoverProps = {
+  getEmoji: (emoji: string, encode: string) => void;
+};
 
 const iconTab = [
   { icon: Smile, index: 0 },
@@ -24,7 +27,7 @@ const iconTab = [
 type TabPanelCustomizeProps = {
   data: EmojiIcon[];
   value: number;
-  func: (icon: any, encode: string) => void;
+  func: (emoji: any, encode: string) => void;
 };
 
 const TabPanelCustomize = ({ data, value, func }: TabPanelCustomizeProps) => {
@@ -58,7 +61,7 @@ const TabPanelCustomize = ({ data, value, func }: TabPanelCustomizeProps) => {
 
 const TabPanelCustomizeMemo = memo(TabPanelCustomize);
 
-const EmojiTab = () => {
+const EmojiTab = ({ getEmoji }: EmojiPopoverProps) => {
   const theme = useTheme();
 
   return (
@@ -103,15 +106,15 @@ const EmojiTab = () => {
       </TabList>
 
       {Object.values(EMOJI).map((e, i) => (
-        <TabPanelCustomizeMemo key={i} value={i} data={e} func={() => {}} />
+        <TabPanelCustomizeMemo key={i} value={i} data={e} func={getEmoji} />
       ))}
     </Tabs>
   );
 };
 
-export const EmojiPopover = () => {
+export const EmojiPopover = ({ getEmoji }: EmojiPopoverProps) => {
   return (
-    <Popover content={<EmojiTab />} trigger="click">
+    <Popover content={<EmojiTab getEmoji={getEmoji} />} trigger="click">
       <IconButtonCustomize
         icon={Laugh}
         sx={{

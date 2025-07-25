@@ -5,10 +5,10 @@ import "./globals.css";
 import ThemeRegistry from "./ThemeRegistry";
 
 export const metadata: Metadata = {
-  title: "Cam app",
-  description: "hihi",
+  title: "ThinkTalk",
+  description: "Trò chuyện cùng nhau nhé!",
   icons: {
-    icon: "/images/logo.svg",
+    icon: "/images/icon.png",
   },
 };
 
@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="h-[100vh]">
+      <body className="h-screen">
         <TanstackQueryIniter>
           <ThemeRegistry options={{ key: "joy" }}>
             {children}

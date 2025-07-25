@@ -24,6 +24,13 @@ export enum MessageType {
   CONTACT = "contact", // Gửi danh bạ
 }
 
+export enum SendStatus {
+  SENDING = "sending",
+  SENT = "sent",
+  FAILED = "failed",
+  READ = "read",
+}
+
 export type UserDetail = {
   id: number | string;
   createdAt: Date;
@@ -71,7 +78,7 @@ export type MessageStatus = {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
-  status: "sent" | "delivered" | "read" | string;
+  status: SendStatus;
   user: MsgUserStatus;
 };
 
@@ -86,6 +93,7 @@ export type Message = {
   type: MessageType;
   user: Omit<UserDetail, "accessToken" | "refreshToken">;
   messageStatus: MessageStatus[];
+  sendStatus?: SendStatus;
 };
 
 export type ChatItem = {
@@ -107,15 +115,6 @@ export type Meta = {
   total: number;
   limit: number;
 };
-
-// export type Conversation = {
-//   id: string;
-//   createdAt: string;
-//   updatedAt: string;
-//   deletedAt: string | null;
-//   role: "member" | "admin" | string;
-//   chat: ChatItem;
-// };
 
 export interface EmojiIcon {
   emoji: string;

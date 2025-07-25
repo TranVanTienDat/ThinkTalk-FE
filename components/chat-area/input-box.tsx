@@ -1,13 +1,16 @@
+import { bgImgConfig } from "@/constants/chat.config";
+import { useMessageHandler } from "@/context/message-handler-context";
+import { MessageType, Params } from "@/types";
 import { Box, IconButton, Sheet, Stack, styled, Textarea } from "@mui/joy";
 import { ImagePlus, Paperclip, SendHorizonal } from "lucide-react";
 import { useCallback, useState } from "react";
 import { IconButtonCustomize } from "../base/button-loading";
 import { EmojiPopover } from "./emojis";
-import { bgImgConfig } from "@/constants/chat.config";
 
 const SheetStyles = styled(Sheet)(() => ({
   width: "100%",
   position: "sticky",
+  height: "60px",
   bottom: 0,
   left: 0,
   right: 0,
@@ -18,21 +21,39 @@ const TextareaStyles = styled(Textarea)(({ theme }) => ({
   border: "none",
   boxShadow: "none",
   outline: "none",
-  color: theme.palette.custom.textInputQuest,
+  color: theme.palette.secondary[100],
   width: "100%",
   px: "8px",
   pr: "24px",
   "--Textarea-focusedThickness": "0",
 }));
 
-export const InputBox = () => {
+export const InputBox = ({
+  params,
+  scrollToBottom,
+}: {
+  params: Params;
+  scrollToBottom: () => void;
+}) => {
+  const { updateHandler } = useMessageHandler();
   const [messageInput, setMessageInput] = useState("");
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     if (messageInput.trim() === "") return;
-
-    setMessageInput("");
-  }, [messageInput]);
+    try {
+      updateHandler({
+        chatId: params.id,
+        message: messageInput.trim(),
+        type: MessageType.TEXT,
+      });
+      setMessageInput("");
+      setTimeout(() => {
+        scrollToBottom();
+      }, 0);
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+  }, [messageInput, params.id, updateHandler]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -53,6 +74,13 @@ export const InputBox = () => {
       }
     },
     [handleSubmit]
+  );
+
+  const getEmoji = useCallback(
+    (emoji: string) => {
+      setMessageInput((prev) => prev + emoji);
+    },
+    [setMessageInput]
   );
 
   return (
@@ -85,6 +113,7 @@ export const InputBox = () => {
             value={messageInput}
             onChange={(e) => setMessageInput(e.target.value)}
             onKeyDown={handleKeyDown}
+            data-emoji-input="unicode"
           />
           <Box
             sx={{
@@ -94,7 +123,7 @@ export const InputBox = () => {
               zIndex: 1000,
             }}
           >
-            <EmojiPopover />
+            <EmojiPopover getEmoji={getEmoji} />
           </Box>
         </Box>
         <IconButton variant="soft" onClick={handleSubmit}>

@@ -1,19 +1,21 @@
 "use client";
-import { Form } from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import Image from "next/image";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import Banner from "../_components/Banner";
-import { InputWithLabel } from "../_components/InputWithLabel";
 import auth from "@/apiRequest/auth";
-import useUserDetailStore, { UserType } from "@/stores/user-store";
+import { Form } from "@/components/ui/form";
+import useDocumentTitle from "@/hooks/use-document-title";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import useUserDetailStore, { UserType } from "@/stores/user-store";
 import { DeviceType } from "@/types";
 import { getDevice } from "@/utils/getDevice";
-import { ButtonLoading } from "@/components/base/button-loading";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@mui/joy";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { AuthWrap } from "../_components/auth-wrap";
+import { InputWithLabel } from "../_components/input-with-label";
 
 const formSchema = z.object({
   fullname: z.string().min(2, {
@@ -26,6 +28,7 @@ const formSchema = z.object({
 });
 
 export default function Page() {
+  useDocumentTitle("Đăng kí");
   const saveUser = useUserDetailStore((state) => state.saveUser);
   const { toast } = useToast();
   const router = useRouter();
@@ -78,56 +81,49 @@ export default function Page() {
     }
   }
   return (
-    <div className="flex justify-center bg-[#19181F]">
-      <div className="flex-1 flex justify-center items-center">
-        <div className="w-[400px] text-white">
-          <h1 className=" font-extrabold text-3xl flex gap-3 pt-6 pb-4">
-            Hello guy
-            <Image src="/images/logo.svg" alt="Logo" width={38} height={38} />
-          </h1>
-
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <InputWithLabel
-                placeholder="Nhập tên đầy đủ của bạn"
-                fieldTitle="Fullname"
-                nameInSchema="fullname"
-              />
-
-              <InputWithLabel
-                placeholder="Nhập email của bạn"
-                fieldTitle="Email"
-                nameInSchema="email"
-              />
-              <InputWithLabel
-                placeholder="Nhập password của bạn"
-                fieldTitle="Password"
-                nameInSchema="password"
-              />
-
-              <div className="text-right">
-                <ButtonLoading
-                  title="Đăng kí"
-                  isLoading={false}
-                  type="submit"
-                  className="border border-white hover:bg-white hover:text-black"
-                />
-              </div>
-            </form>
-          </Form>
-
-          <div className="text-right mt-3 text-xs ">
-            Đã có tài khoản?
-            <button
-              className="text-[#615EF0] text-sm ml-2"
-              onClick={() => router.push("/login")}
-            >
-              đăng nhập
-            </button>
-          </div>
-        </div>
+    <AuthWrap>
+      <div className="flex justify-center pt-2 pb-2">
+        <Image
+          src="/images/logo-max-size.png"
+          alt="Logo"
+          width={150}
+          height={70}
+        />
       </div>
-      <Banner />
-    </div>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <InputWithLabel
+            placeholder="Nhập tên đầy đủ của bạn"
+            fieldTitle="Fullname"
+            nameInSchema="fullname"
+          />
+
+          <InputWithLabel
+            placeholder="Nhập email của bạn"
+            fieldTitle="Email"
+            nameInSchema="email"
+          />
+          <InputWithLabel
+            placeholder="Nhập password của bạn"
+            fieldTitle="Password"
+            nameInSchema="password"
+          />
+
+          <div className="text-right">
+            <Button variant="soft" loading={false} type="submit">
+              Đăng kí
+            </Button>
+          </div>
+        </form>
+      </Form>
+
+      <div className="text-right mt-3 text-sm ">
+        Đã có tài khoản?
+        <Link className="text-[#615EF0] text-sm ml-2" href={"/login"}>
+          đăng nhập
+        </Link>
+      </div>
+    </AuthWrap>
   );
 }

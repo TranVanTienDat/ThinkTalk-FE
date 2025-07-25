@@ -16,7 +16,6 @@ export const useScroll = ({
   const scrollToPosition = useCallback(
     (offset: number | "bottom") => {
       if (!ref.current) return;
-
       if (offset === "bottom") {
         ref.current.scrollTop = ref.current.scrollHeight;
         return;
@@ -39,5 +38,5 @@ export const useScroll = ({
     scrollToPosition("bottom");
   }, [...otherDeps]);
 
-  return { ref };
+  return { ref, scrollToBottom: () => scrollToPosition("bottom") };
 };

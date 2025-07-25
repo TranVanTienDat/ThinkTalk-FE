@@ -42,7 +42,7 @@ class SocketManager {
     if (!this.socket) {
       const auth: any = {};
       if (this.authToken) {
-        auth.token = this.authToken;
+        auth.token = `Bearer ${this.authToken}`;
       }
 
       const extraHeaders: any = {};
@@ -52,13 +52,14 @@ class SocketManager {
 
       this.socket = io(this.url, {
         ...this.options,
-        auth, // Optional: có thể dùng hoặc không
-        extraHeaders, // QUAN TRỌNG: NestJS đọc từ đây
-        transportOptions: {
-          polling: {
-            extraHeaders, // Đảm bảo cả polling transport cũng có header
-          },
-        },
+        transports: ["websocket"],
+        auth,
+        extraHeaders,
+        // transportOptions: {
+        //   polling: {
+        //     extraHeaders,
+        //   },
+        // },
       });
 
       this.socket.on("connect", () => {

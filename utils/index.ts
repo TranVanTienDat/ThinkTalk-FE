@@ -1,4 +1,8 @@
 import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
+dayjs.extend(timezone);
 export const mappingNotificationType = {
   message: "Thống báo Tin Nhắn",
   friend_request: "Thong báo Lời Mời Kết Bạn",
@@ -7,19 +11,24 @@ export const mappingNotificationType = {
 };
 
 export const getDurationDate = (dateString: string) => {
-  const now = dayjs();
-  const date = dayjs(dateString);
-  const diffMinutes = now.diff(date, "minute");
-  const diffHours = now.diff(date, "hour");
-  const diffDays = now.diff(date, "day");
+  // Parse input as UTC
+  const inputDate = dayjs(dateString).utc(true);
+  // Current time in UTC
+  const now = dayjs().utc();
+
+  if (inputDate.isAfter(now)) {
+    return "0 phút trước";
+  }
+
+  const diffMinutes = now.diff(inputDate, "minute");
+  const diffHours = now.diff(inputDate, "hour");
+  const diffDays = now.diff(inputDate, "day");
 
   if (diffMinutes < 60) return `${diffMinutes} phút trước`;
-
   if (diffHours < 24) return `${diffHours} giờ trước`;
-
   if (diffDays <= 3) return `${diffDays} ngày trước`;
 
-  return date.format("DD/MM/YYYY");
+  return inputDate.local().format("DD/MM/YYYY HH:mm");
 };
 
 export const emojiWithCode = (e: string) => {

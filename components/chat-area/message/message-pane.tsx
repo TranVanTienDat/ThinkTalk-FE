@@ -4,11 +4,11 @@ import { useMessages } from "@/hooks/use-messages";
 import { Message, Params } from "@/types";
 import { sortDateHandler } from "@/utils";
 import { Box, Sheet, Stack } from "@mui/joy";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useMemo } from "react";
 import { useInView } from "react-intersection-observer";
-import { useVirtualizer } from "@tanstack/react-virtual";
-import { MessageItem } from "./message-item";
 import AvatarHeader from "../chat-box";
+import { MessageItem } from "./message-item";
 const scrollBoxStyles = {
   display: "flex",
   flex: 1,
@@ -41,10 +41,10 @@ export default function MessagesPane({
   });
 
   useEffect(() => {
-    if (inView && hasNextPage && !isLoading) {
+    if (inView && hasNextPage) {
       fetchNextPage?.();
     }
-  }, [inView, fetchNextPage, hasNextPage, isLoading]);
+  }, [inView, fetchNextPage, hasNextPage]);
 
   const sortMessageMemo = useMemo(() => {
     const dataFlat = data?.pages.flatMap((page) => page.data) || [];
@@ -79,6 +79,12 @@ export default function MessagesPane({
             <Loading type="area" />
           </div>
         )}
+
+        {isLoading && (
+          <Box>
+            <Loading type="area" />
+          </Box>
+        )}
         <Stack spacing={2} sx={{ justifyContent: "flex-end" }}>
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {
             const msg = sortMessageMemo[virtualRow.index];
@@ -92,8 +98,7 @@ export default function MessagesPane({
                   right: 0,
                   height: `${virtualRow.size}px`,
                   transform: `translateY(${virtualRow.start}px)`,
-                  marginRight: isMe(msg) ? "16px" : "0",
-                  marginLeft: isMe(msg) ? "0" : "16px",
+                  margin: "0 16px",
                 }}
               >
                 <MessageItem key={msg.id} msg={msg} isMe={isMe(msg)} />

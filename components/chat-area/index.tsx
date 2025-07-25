@@ -1,9 +1,9 @@
 "use client";
 
+import { Params } from "@/types";
 import { Sheet } from "@mui/joy";
 import { Header } from "./_header";
 import { ChatBox } from "./chat-box";
-import { Params } from "@/types";
 
 export const ChatArea = ({ params }: { params: Params }) => {
   return (

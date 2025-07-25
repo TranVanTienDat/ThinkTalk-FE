@@ -4,25 +4,28 @@ import { useScroll } from "@/hooks/use-scroll";
 import { useConversationInfoStore } from "@/stores/conversation-info-store";
 import { Params } from "@/types";
 import { Avatar, Box, Stack, Typography, useTheme } from "@mui/joy";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { memo } from "react";
 import { useStore } from "zustand";
 import { InputBox } from "./input-box";
 import MessagesPane from "./message/message-pane";
+dayjs.extend(utc);
 
 export const ChatBox = ({ params }: { params: Params }) => {
   const { isFetchingNextPage: isNextPage, isLoading } = useMessages({
     id: params.id,
   });
-
-  const { ref } = useScroll({
+  const { ref, scrollToBottom } = useScroll({
     otherDeps: [isLoading],
     isNextPage,
     offset: 500,
   });
+
   return (
-    <Stack className="h-full flex flex-col relative ">
+    <Stack className="h-full flex flex-col relative overflow-hidden">
       <Box
-        className="overflow-y-auto custom-scrollbar pb-[60px] flex-1"
+        className="overflow-y-auto custom-scrollbar h-full"
         sx={{
           backgroundImage: `url(${bgImgConfig["025c84a0-b438-4c8a-b8e9-8a52a025a7b9"].img})`,
           backgroundSize: "cover",
@@ -31,7 +34,7 @@ export const ChatBox = ({ params }: { params: Params }) => {
       >
         <MessagesPane params={params} parentRef={ref} />
       </Box>
-      <InputBox />
+      <InputBox params={params} scrollToBottom={scrollToBottom} />
     </Stack>
   );
 };
