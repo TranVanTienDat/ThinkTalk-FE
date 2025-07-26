@@ -82,6 +82,8 @@ export type MessageStatus = {
   user: MsgUserStatus;
 };
 
+export type GroupPosition = "start" | "end" | "middle" | "single";
+
 export type Message = {
   id: string;
   createdAt: string;
@@ -95,6 +97,7 @@ export type Message = {
   messageStatus: MessageStatus[];
   sendStatus?: SendStatus;
   chat?: Omit<ChatItem, "lastMessage">;
+  group?: { position: GroupPosition };
 };
 
 export type ChatItem = {

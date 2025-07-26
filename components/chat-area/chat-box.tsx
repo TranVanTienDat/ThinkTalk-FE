@@ -1,3 +1,4 @@
+"use client";
 import { bgImgConfig } from "@/constants/chat.config";
 import { useMessages } from "@/hooks/use-messages";
 import { useScroll } from "@/hooks/use-scroll";

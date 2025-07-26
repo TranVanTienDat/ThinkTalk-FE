@@ -1,3 +1,4 @@
+"use client";
 import { bgImgConfig } from "@/constants/chat.config";
 import useDocumentTitle from "@/hooks/use-document-title";
 import { useConversationInfoStore } from "@/stores/conversation-info-store";

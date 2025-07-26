@@ -27,7 +27,7 @@ export default function ChatBubble(props: ChatBubbleProps) {
     () => [
       {
         ...baseSheetStyles,
-        borderColor: theme.palette.common.white,
+        border: "none",
         borderRadius: isMe ? "0 12px 12px 12px" : "12px 0 12px 12px",
         backgroundColor: isMe
           ? theme.palette.primary[700]

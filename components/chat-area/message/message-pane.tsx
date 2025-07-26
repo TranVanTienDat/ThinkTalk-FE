@@ -2,9 +2,8 @@ import Loading from "@/components/base/Loading";
 import { useAppContext } from "@/context/app-context";
 import { useMessages } from "@/hooks/use-messages";
 import { Message, Params } from "@/types";
-import { sortDateHandler } from "@/utils";
-import { Box, Sheet, Stack } from "@mui/joy";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { groupMessages, sortDateHandler } from "@/utils";
+import { Box, Sheet } from "@mui/joy";
 import { useEffect, useMemo } from "react";
 import { useInView } from "react-intersection-observer";
 import AvatarHeader from "../chat-box";
@@ -25,8 +24,8 @@ const sheetStyles = {
 
 export default function MessagesPane({
   params,
-  parentRef,
-}: {
+}: // parentRef,
+{
   params: Params;
   parentRef: React.RefObject<HTMLDivElement>;
 }) {
@@ -48,15 +47,22 @@ export default function MessagesPane({
 
   const sortMessageMemo = useMemo(() => {
     const dataFlat = data?.pages.flatMap((page) => page.data) || [];
-    return dataFlat.sort((a, b) => sortDateHandler(a.createdAt, b.createdAt));
+    const sortedMessages = dataFlat.sort((a, b) =>
+      sortDateHandler(a.createdAt, b.createdAt)
+    );
+    return groupMessages(sortedMessages);
   }, [data]);
 
-  const rowVirtualizer = useVirtualizer({
-    count: sortMessageMemo.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 100,
-    overscan: 5,
-  });
+  // const rowVirtualizer = useVirtualizer({
+  //   count: sortMessageMemo.length,
+  //   getScrollElement: () => parentRef.current,
+  //   estimateSize: () => 100,
+  //   measureElement: (el) => {
+  //     const height = el.getBoundingClientRect().height;
+  //     console.log("Measured height:", height);
+  //     return height;
+  //   },
+  // });
 
   const isMe = (msg: Message) => {
     return msg.user.id === user.id;
@@ -69,8 +75,8 @@ export default function MessagesPane({
         sx={[
           scrollBoxStyles,
           {
-            height: `${rowVirtualizer.getTotalSize()}px`,
-            position: "relative",
+            // height: `${rowVirtualizer.getTotalSize()}px`,
+            // position: "relative",
           },
         ]}
       >
@@ -85,27 +91,27 @@ export default function MessagesPane({
             <Loading type="area" />
           </Box>
         )}
-        <Stack spacing={2} sx={{ justifyContent: "flex-end" }}>
-          {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-            const msg = sortMessageMemo[virtualRow.index];
-            return (
-              <div
-                key={msg.id}
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: `${virtualRow.size}px`,
-                  transform: `translateY(${virtualRow.start}px)`,
-                  margin: "0 16px",
-                }}
-              >
-                <MessageItem key={msg.id} msg={msg} isMe={isMe(msg)} />
-              </div>
-            );
-          })}
-        </Stack>
+        {/* <Stack spacing={2} sx={{ justifyContent: "flex-end" }}> */}
+        {sortMessageMemo.map((msg) => {
+          // const msg = sortMessageMemo[virtualRow.index];
+          return (
+            <div
+              key={msg.id}
+              // style={{
+              //   position: "absolute",
+              //   top: 0,
+              //   left: 0,
+              //   right: 0,
+              //   // height: `${virtualRow.size}px`,
+              //   // transform: `translateY(${virtualRow.start}px)`,
+              //   margin: "0 16px",
+              // }}
+            >
+              <MessageItem key={msg.id} msg={msg} isMe={isMe(msg)} />
+            </div>
+          );
+        })}
+        {/* </Stack> */}
       </Box>
     </Sheet>
   );

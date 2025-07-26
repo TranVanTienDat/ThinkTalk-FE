@@ -1,3 +1,4 @@
+import { GroupPosition, Message } from "@/types";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
@@ -12,7 +13,7 @@ export const mappingNotificationType = {
 
 export const getDurationDate = (dateString: string) => {
   // Parse input as UTC
-  const inputDate = dayjs(dateString).utc(true);
+  const inputDate = dayjs.utc(dateString);
   // Current time in UTC
   const now = dayjs().utc();
 
@@ -53,3 +54,52 @@ export const sortDateHandler = (a: string, b: string) => {
   const dateB = new Date(b);
   return dateA.getTime() - dateB.getTime();
 };
+
+export function groupMessages(messages: Message[]): any[] {
+  const TIME_THRESHOLD = 60 * 1000; // 1 phút
+
+  return messages.map((current, index, array) => {
+    // Tin nhắn hệ thống không nhóm
+    if (current.type === "system") {
+      return { ...current, group: undefined };
+    }
+
+    const prev = array[index - 1];
+    const next = array[index + 1];
+
+    // Kiểm tra điều kiện nhóm với tin nhắn trước
+    const shouldGroupWithPrev =
+      prev &&
+      current.senderId === prev.senderId &&
+      new Date(current.createdAt).getTime() -
+        new Date(prev.createdAt).getTime() <
+        TIME_THRESHOLD;
+
+    // Kiểm tra điều kiện nhóm với tin nhắn sau
+    const shouldGroupWithNext =
+      next &&
+      current.senderId === next.senderId &&
+      new Date(next.createdAt).getTime() -
+        new Date(current.createdAt).getTime() <
+        TIME_THRESHOLD;
+
+    let position: GroupPosition | undefined;
+
+    if (shouldGroupWithPrev || shouldGroupWithNext) {
+      if (shouldGroupWithPrev && shouldGroupWithNext) {
+        position = "middle";
+      } else if (shouldGroupWithPrev) {
+        position = "end";
+      } else if (shouldGroupWithNext) {
+        position = "start";
+      } else {
+        position = "single";
+      }
+    }
+
+    return {
+      ...current,
+      group: position ? { position } : undefined,
+    };
+  });
+}

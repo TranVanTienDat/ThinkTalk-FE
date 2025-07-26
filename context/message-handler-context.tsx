@@ -174,7 +174,7 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
     }
   });
 
-  const updateMessage = useCallback(
+  const updateEventMessage = useCallback(
     (msg: Message) => {
       queryClient.setQueryData([`msg-${msg.chatId}`], (old: any) => {
         if (!old) return old;
@@ -195,7 +195,7 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
     [queryClient]
   );
 
-  const updateConversation = useCallback(
+  const updateEventConversation = useCallback(
     (msg: Message) => {
       queryClient.setQueryData(["conversations"], (old: any) => {
         if (!old) return old;
@@ -203,19 +203,28 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
         return {
           ...old,
           pages: old.pages.map((page: any) => {
+            const itemIndex = page.data.findIndex(
+              (item: ChatItem) => item.id === msg.chatId
+            );
+
+            if (itemIndex === -1) return page;
+
+            const newData = [...page.data];
+
+            const dataUpdate = {
+              ...newData[itemIndex],
+              lastMessage: msg,
+              updatedAt: new Date().toISOString(),
+            };
+
+            newData[itemIndex] = dataUpdate;
+
+            const [movedItem] = newData.splice(itemIndex, 1);
+            newData.unshift(movedItem);
+
             return {
               ...page,
-              data: page.data.map((item: ChatItem) => {
-                if (item.id === msg.chatId) {
-                  return {
-                    ...item,
-                    lastMessage: msg,
-                    updatedAt: new Date().toISOString(),
-                    createdAt: item.createdAt,
-                  };
-                }
-                return item;
-              }),
+              data: newData,
             };
           }),
         };
@@ -240,11 +249,11 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
         messageStatus: [],
         sendStatus: SendStatus.SENDING,
       };
-      updateMessage(msg);
-      updateConversation(msg);
+      updateEventMessage(msg);
+      updateEventConversation(msg);
       emit("send-message", { ...message });
     },
-    [user, updateMessage, updateConversation, emit]
+    [user, updateEventMessage, updateEventConversation, emit]
   );
 
   return (

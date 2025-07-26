@@ -90,7 +90,7 @@ const Content = ({
   const theme = useTheme();
 
   return (
-    <Link href={`/workspace/t/${id}`}>
+    <Link href={`/workspace/t/${id}`} className="w-full">
       <Stack
         direction="column"
         sx={{ alignItems: "flex-start", justifyContent: "space-evenly" }}
