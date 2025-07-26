@@ -47,10 +47,11 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
   const tempMsgIdRef = useRef("");
 
   useSocketEvent("sended-message", (response: Response) => {
-    const { status, data: MsgRes, userId } = response;
+    const { status, data: msgRes, userId } = response;
+    console.log("response", response);
 
-    if (status === "success" && (MsgRes as Message).senderId === user.id) {
-      queryClient.setQueryData([`msg-${MsgRes.chatId}`], (old: any) => {
+    if (status === "success" && (msgRes as Message).senderId === user.id) {
+      queryClient.setQueryData([`msg-${msgRes.chatId}`], (old: any) => {
         if (!old) return old;
 
         return {
@@ -75,33 +76,11 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
           }),
         };
       });
-    } else if (status === "error" && userId === user.id) {
-      queryClient.setQueryData([`msg-${MsgRes.chatId}`], (old: any) => {
-        if (!old) return old;
-
-        return {
-          ...old,
-          pages: old.pages.map((page: any) => {
-            return {
-              ...page,
-              data: page.data.map((item: Message) => {
-                if (item.id === tempMsgIdRef.current) {
-                  return {
-                    ...item,
-                    sendStatus: SendStatus.FAILED,
-                  };
-                }
-                return item;
-              }),
-            };
-          }),
-        };
-      });
     } else if (
       status === "success" &&
-      (MsgRes as Message).senderId !== user.id
+      (msgRes as Message).senderId !== user.id
     ) {
-      queryClient.setQueryData([`msg-${MsgRes.chatId}`], (old: any) => {
+      queryClient.setQueryData([`msg-${msgRes.chatId}`], (old: any) => {
         if (!old) return old;
 
         return {
@@ -109,7 +88,7 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
           pages: old.pages.map((page: any) => {
             return {
               ...page,
-              data: [MsgRes, ...page.data].map((item: Message) => {
+              data: [msgRes, ...page.data].map((item: Message) => {
                 const { sendStatus, ...rest } = item;
                 return {
                   ...rest,
@@ -119,6 +98,79 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
           }),
         };
       });
+
+      queryClient.setQueryData(["conversations"], (old: any) => {
+        if (!old) return old;
+
+        return {
+          ...old,
+          pages: old.pages.map((page: any) => {
+            // Tìm index của item cần cập nhật
+            const itemIndex = page.data.findIndex(
+              (item: ChatItem) => item.id === msgRes.chatId
+            );
+
+            if (itemIndex === -1) {
+              const newChat: ChatItem = {
+                ...((msgRes as Message).chat as ChatItem),
+                isRead: false,
+                lastMessage: msgRes as Message,
+              };
+
+              return { ...page, data: [newChat, ...page.data] };
+            }
+
+            // Tạo bản sao của data để không mutate trực tiếp
+            const newData = [...page.data];
+
+            // Cập nhật item
+            const updatedItem: ChatItem = {
+              ...newData[itemIndex],
+              lastMessage: msgRes as Message,
+              updatedAt:
+                newData[itemIndex]?.updatedAt || new Date().toISOString(),
+              createdAt: newData[itemIndex].createdAt,
+              isRead: false,
+            };
+            // Gán item đã cập nhật
+            newData[itemIndex] = updatedItem;
+
+            // Di chuyển item lên đầu mảng
+            const [movedItem] = newData.splice(itemIndex, 1);
+            newData.unshift(movedItem);
+
+            return {
+              ...page,
+              data: newData,
+            };
+          }),
+        };
+      });
+    } else if (status === "error" && userId === user.id) {
+      queryClient.setQueryData(
+        [`msg-${(msgRes as Message).chatId}`],
+        (old: any) => {
+          if (!old) return old;
+
+          return {
+            ...old,
+            pages: old.pages.map((page: any) => {
+              return {
+                ...page,
+                data: page.data.map((item: Message) => {
+                  if (item.id === tempMsgIdRef.current) {
+                    return {
+                      ...item,
+                      sendStatus: SendStatus.FAILED,
+                    };
+                  }
+                  return item;
+                }),
+              };
+            }),
+          };
+        }
+      );
     }
   });
 

@@ -4,13 +4,10 @@ import { useScroll } from "@/hooks/use-scroll";
 import { useConversationInfoStore } from "@/stores/conversation-info-store";
 import { Params } from "@/types";
 import { Avatar, Box, Stack, Typography, useTheme } from "@mui/joy";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
 import { memo } from "react";
 import { useStore } from "zustand";
 import { InputBox } from "./input-box";
 import MessagesPane from "./message/message-pane";
-dayjs.extend(utc);
 
 export const ChatBox = ({ params }: { params: Params }) => {
   const { isFetchingNextPage: isNextPage, isLoading } = useMessages({

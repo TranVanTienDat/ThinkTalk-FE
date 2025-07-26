@@ -71,7 +71,7 @@ export default function Page() {
 
     if (response) {
       saveUser(response as UserType);
-      router.push("/message");
+      router.push("/workspace");
     } else {
       toast({
         variant: "destructive",

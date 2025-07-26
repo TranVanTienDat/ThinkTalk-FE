@@ -1,3 +1,4 @@
+"use client";
 import { ChatArea } from "@/components/chat-area";
 import { Params } from "@/types";
 

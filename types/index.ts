@@ -94,6 +94,7 @@ export type Message = {
   user: Omit<UserDetail, "accessToken" | "refreshToken">;
   messageStatus: MessageStatus[];
   sendStatus?: SendStatus;
+  chat?: Omit<ChatItem, "lastMessage">;
 };
 
 export type ChatItem = {

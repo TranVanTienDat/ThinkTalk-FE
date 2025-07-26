@@ -1,6 +1,6 @@
 import { useConversations } from "@/hooks/use-conversations";
 import { useConversationInfoStore } from "@/stores/conversation-info-store";
-import { Message } from "@/types";
+import { ChatItem, Message } from "@/types";
 import { getDurationDate, hasPassedTwoDays } from "@/utils";
 import {
   Avatar,
@@ -47,18 +47,10 @@ const LastMessageItem = ({
       <Typography
         level="h1"
         className="truncate"
+        textColor={isRead ? theme.palette.secondary[300] : undefined}
         sx={[
-          isRead
-            ? {
-                opacity: 0.4,
-                fontWeight: 500,
-              }
-            : {
-                opacity: 1,
-                fontWeight: 700,
-                color: theme.palette.secondary[100],
-              },
           {
+            fontWeight: isRead ? 500 : 700,
             maxWidth: "130px",
             fontSize: "13px",
             flex: 1,
@@ -69,11 +61,11 @@ const LastMessageItem = ({
       </Typography>
       <Typography
         level="body-xs"
+        textColor={isRead ? theme.palette.secondary[300] : undefined}
         sx={[
           {
             lineHeight: 1,
             ml: 0.5,
-            color: theme.palette.secondary[300],
             fontWeight: 500,
           },
         ]}
@@ -124,15 +116,15 @@ const Content = ({
 
 const ConversationItem = ({
   name,
-  isRead,
+  isRead = true,
   avatar,
   id,
   lastMsg,
   isActive,
 }: {
   name: string;
-  isRead: boolean;
-  avatar: string | null;
+  isRead?: boolean;
+  avatar?: string;
   id: string;
   lastMsg: Message;
   isActive: boolean;
@@ -178,7 +170,7 @@ const ConversationItem = ({
       <Content id={id} name={name} isRead={isRead} lastMsg={lastMsg} />
       <Badge
         anchorOrigin={{ vertical: "top", horizontal: "left" }}
-        invisible={!isRead}
+        invisible={isRead}
         size="sm"
         sx={{
           "& .MuiBadge-badge": {
@@ -210,13 +202,13 @@ const RenderConversation = ({
   const { id } = useParams();
   return (
     <>
-      {dataFlat.map((co) => (
+      {dataFlat.map((co: ChatItem) => (
         <ConversationItemMemo
           key={co.id}
           id={co.id}
           name={co.name}
-          isRead={co.isRead ?? false}
-          avatar={co.avatar ?? null}
+          isRead={co?.isRead}
+          avatar={co?.avatar}
           lastMsg={co.lastMessage}
           isActive={(id as string) === co.id}
         />
