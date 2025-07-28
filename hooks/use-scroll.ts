@@ -2,37 +2,37 @@ import { useCallback, useEffect, useRef } from "react";
 
 type ScrollConfig = {
   isNextPage: boolean;
+  fetchStatus?: "fetching" | "paused" | "idle";
   offset?: number | "bottom";
   otherDeps?: any[]; // Các dependencies khác
 };
 
 export const useScroll = ({
   isNextPage,
+  fetchStatus,
   offset = 0,
   otherDeps = [],
 }: ScrollConfig) => {
   const ref = useRef<HTMLDivElement | null>(null);
 
   const scrollToPosition = useCallback(
-    (offset: number | "bottom") => {
+    (offset?: number | "bottom") => {
       if (!ref.current) return;
-      if (offset === "bottom") {
-        ref.current.scrollTop = ref.current.scrollHeight;
+      if (typeof offset === "number") {
+        ref.current.scrollTop = offset;
         return;
       }
 
-      if (typeof offset === "number") {
-        ref.current.scrollTop = offset;
-      }
+      ref.current.scrollTop = ref.current.scrollHeight;
     },
     [isNextPage, offset]
   );
 
   useEffect(() => {
-    if (isNextPage) {
+    if (!isNextPage && fetchStatus === "idle") {
       scrollToPosition(offset);
     }
-  }, [isNextPage, offset]);
+  }, [isNextPage, fetchStatus, offset]);
 
   useEffect(() => {
     scrollToPosition("bottom");

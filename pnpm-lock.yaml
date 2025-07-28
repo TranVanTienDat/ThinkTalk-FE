@@ -134,6 +134,9 @@ importers:
       use-context-selector:
         specifier: ^2.0.0
         version: 2.0.0(react@18.3.1)(scheduler@0.23.2)
+      use-debounce:
+        specifier: ^10.0.5
+        version: 10.0.5(react@18.3.1)
       use-socket.io-client:
         specifier: ^1.1.0
         version: 1.1.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -2968,6 +2971,12 @@ packages:
     peerDependencies:
       react: '>=18.0.0'
       scheduler: '>=0.19.0'
+
+  use-debounce@10.0.5:
+    resolution: {integrity: sha512-Q76E3lnIV+4YT9AHcrHEHYmAd9LKwUAbPXDm7FlqVGDHiSOhX3RDjT8dm0AxbJup6WgOb1YEcKyCr11kBJR5KQ==}
+    engines: {node: '>= 16.0.0'}
+    peerDependencies:
+      react: '*'
 
   use-socket.io-client@1.1.0:
     resolution: {integrity: sha512-osUeJkLbV6EDprbsjybB3MU5wHKGD3sMuHaSqIbr4Lo2SMGCpX5EhzW97/j8ToYvVNM+Bjkyi+WbKoTkXUXdGQ==}
@@ -6308,6 +6317,10 @@ snapshots:
     dependencies:
       react: 18.3.1
       scheduler: 0.23.2
+
+  use-debounce@10.0.5(react@18.3.1):
+    dependencies:
+      react: 18.3.1
 
   use-socket.io-client@1.1.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:

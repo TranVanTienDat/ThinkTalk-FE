@@ -32,7 +32,7 @@ export enum SendStatus {
 }
 
 export type UserDetail = {
-  id: number | string;
+  id: string;
   createdAt: Date;
   updatedAt: Date;
   email: string;
@@ -73,12 +73,10 @@ export type MsgUserStatus = {
   status: UserStatus;
 };
 
-export type MessageStatus = {
+export type MessageRead = {
   id: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string | null;
-  status: SendStatus;
   user: MsgUserStatus;
 };
 
@@ -94,10 +92,11 @@ export type Message = {
   chatId: string;
   type: MessageType;
   user: Omit<UserDetail, "accessToken" | "refreshToken">;
-  messageStatus: MessageStatus[];
+  messageRead: MessageRead[];
   sendStatus?: SendStatus;
   chat?: Omit<ChatItem, "lastMessage">;
   group?: { position: GroupPosition };
+  read?: boolean;
 };
 
 export type ChatItem = {

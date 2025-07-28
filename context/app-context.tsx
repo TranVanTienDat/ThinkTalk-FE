@@ -11,6 +11,7 @@ import {
 import auth from "@/apiRequest/auth";
 import { useEffect, useState, type FC, type ReactNode } from "react";
 import Loading from "@/components/base/Loading";
+import { v4 as uuidv4 } from "uuid";
 
 export type AppContextValue = {
   user: UserDetail;
@@ -20,7 +21,7 @@ export type AppContextValue = {
 
 const AppContext = createContext<AppContextValue>({
   user: {
-    id: 0,
+    id: uuidv4(),
     createdAt: new Date(),
     updatedAt: new Date(),
     email: "",

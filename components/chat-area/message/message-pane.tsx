@@ -1,5 +1,6 @@
 import Loading from "@/components/base/Loading";
 import { useAppContext } from "@/context/app-context";
+import { useMessageHandler } from "@/context/message-handler-context";
 import { useMessages } from "@/hooks/use-messages";
 import { Message, Params } from "@/types";
 import { groupMessages, sortDateHandler } from "@/utils";
@@ -29,7 +30,8 @@ export default function MessagesPane({
   params: Params;
   parentRef: React.RefObject<HTMLDivElement>;
 }) {
-  const { user } = useAppContext();
+  const { user: userCurrent } = useAppContext();
+  const { msgRead } = useMessageHandler();
   const { data, hasNextPage, isLoading, fetchNextPage } = useMessages({
     id: params.id,
   });
@@ -44,14 +46,31 @@ export default function MessagesPane({
       fetchNextPage?.();
     }
   }, [inView, fetchNextPage, hasNextPage]);
-
   const sortMessageMemo = useMemo(() => {
     const dataFlat = data?.pages.flatMap((page) => page.data) || [];
-    const sortedMessages = dataFlat.sort((a, b) =>
+    const latestReadByUser = new Map<string, string>();
+    Object.entries(msgRead).forEach(([msgId, reads]) => {
+      reads.forEach((read) => {
+        const userId = read.user.id;
+        if (!latestReadByUser.has(userId)) {
+          latestReadByUser.set(userId, msgId);
+        }
+      });
+    });
+
+    const dataMerges = dataFlat.map((msg: Message) => ({
+      ...msg,
+      messageRead: (msgRead[msg.id] || []).filter(
+        (read) => latestReadByUser.get(read.user.id) === msg.id
+      ),
+      read: msg.messageRead.some((item) => item.user.id === userCurrent.id),
+    }));
+
+    const sortedMessages = dataMerges.sort((a, b) =>
       sortDateHandler(a.createdAt, b.createdAt)
     );
     return groupMessages(sortedMessages);
-  }, [data]);
+  }, [data, msgRead, userCurrent]);
 
   // const rowVirtualizer = useVirtualizer({
   //   count: sortMessageMemo.length,
@@ -65,9 +84,9 @@ export default function MessagesPane({
   // });
 
   const isMe = (msg: Message) => {
-    return msg.user.id === user.id;
+    return msg.user.id === userCurrent.id;
   };
-
+  // console.log("sortMessageMemo", sortMessageMemo);
   return (
     <Sheet sx={sheetStyles}>
       {!hasNextPage && <AvatarHeader params={params} />}

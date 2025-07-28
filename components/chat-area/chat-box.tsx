@@ -11,12 +11,12 @@ import { InputBox } from "./input-box";
 import MessagesPane from "./message/message-pane";
 
 export const ChatBox = ({ params }: { params: Params }) => {
-  const { isFetchingNextPage: isNextPage, isLoading } = useMessages({
+  const { isFetchingNextPage: isNextPage, fetchStatus } = useMessages({
     id: params.id,
   });
   const { ref, scrollToBottom } = useScroll({
-    otherDeps: [isLoading],
     isNextPage,
+    fetchStatus,
     offset: 500,
   });
 

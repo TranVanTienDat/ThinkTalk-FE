@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   ChatItem,
   Message,
+  MessageRead,
   MessageType,
   SendStatus,
   UserDetail,
@@ -14,13 +15,16 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useRef,
+  useState,
   type ReactNode,
 } from "react";
 import { useAppContext } from "./app-context";
 import { useSocketEvent } from "@/hooks/use-socket-event";
 import { useSocketEmit } from "@/hooks/use-socket-emit";
 import { v4 as uuidv4 } from "uuid";
+import { useDebouncedCallback } from "use-debounce";
 export interface Response {
   status: "success" | "error";
   data: Message | MessageInputType;
@@ -30,6 +34,9 @@ export interface Response {
 
 type MessageContextType = {
   updateHandler: (message: any) => void;
+  setMessageRead: (msgId: string, msgRead: MessageRead[]) => void;
+  msgRead: Record<string, MessageRead[]>;
+  markAsRead: (messageId: string, chatId: string) => void;
 };
 
 type MessageInputType = {
@@ -38,13 +45,21 @@ type MessageInputType = {
   type: MessageType;
 };
 
+interface PendingRead {
+  messageId: string;
+  chatId: string;
+}
+
 const MessageContext = createContext<MessageContextType | undefined>(undefined);
 
 export function MessageHandlerProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const { user } = useAppContext();
   const { emit } = useSocketEmit();
+  const pendingReads = useRef<Map<string, PendingRead>>(new Map());
   const tempMsgIdRef = useRef("");
+
+  const [msgRead, setMsgRead] = useState<Record<string, MessageRead[]>>({});
 
   useSocketEvent("sended-message", (response: Response) => {
     const { status, data: msgRes, userId } = response;
@@ -246,7 +261,7 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
         updatedAt: new Date().toISOString(),
         deletedAt: null,
         senderId: user.id as string,
-        messageStatus: [],
+        messageRead: [],
         sendStatus: SendStatus.SENDING,
       };
       updateEventMessage(msg);
@@ -256,10 +271,71 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
     [user, updateEventMessage, updateEventConversation, emit]
   );
 
+  const setMessageRead = useCallback(
+    (msgId: string, msgRead: MessageRead[]) => {
+      setMsgRead((prev) => ({
+        ...prev,
+        [msgId]: msgRead,
+      }));
+    },
+    []
+  );
+
+  const sendBatchRead = useDebouncedCallback(() => {
+    if (pendingReads.current.size === 0) return;
+
+    const reads = Array.from(pendingReads.current.values());
+
+    // Nhóm theo chatId để gửi các batch riêng biệt
+    const readsByChat = reads.reduce((acc, read) => {
+      if (!acc[read.chatId]) {
+        acc[read.chatId] = [];
+      }
+      acc[read.chatId].push(read.messageId);
+      return acc;
+    }, {} as Record<string, string[]>);
+
+    // Gửi từng batch theo chatId
+    console.log("log: ", readsByChat);
+    Object.entries(readsByChat).forEach(([chatId, messageIds]) => {
+      emit("messages:batch-read", {
+        messageIds,
+        chatId,
+      });
+    });
+
+    pendingReads.current.clear();
+  }, 3000); // Debounce 500ms
+
+  const markAsRead = useCallback(
+    (messageId: string, chatId: string) => {
+      const key = `${chatId}-${messageId}`;
+      if (!pendingReads.current.has(key)) {
+        pendingReads.current.set(key, {
+          messageId,
+          chatId,
+        });
+        sendBatchRead();
+      }
+    },
+    [sendBatchRead]
+  );
+
+  // Xử lý khi component unmount
+  useEffect(() => {
+    return () => {
+      console.log("component unmount");
+      sendBatchRead.flush();
+    };
+  }, [sendBatchRead]);
+
   return (
     <MessageContext.Provider
       value={{
         updateHandler,
+        msgRead,
+        setMessageRead,
+        markAsRead,
       }}
     >
       {children}
