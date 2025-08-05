@@ -1,5 +1,6 @@
 import { useConversations } from "@/hooks/use-conversations";
 import { useConversationInfoStore } from "@/stores/conversation-info-store";
+import useConversationTemp from "@/stores/conversationTemp";
 import { ChatItem, Message } from "@/types";
 import { getDurationDate, hasPassedTwoDays } from "@/utils";
 import {
@@ -11,14 +12,17 @@ import {
   Typography,
   useTheme,
 } from "@mui/joy";
+import { X } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { useStore } from "zustand";
+import { IconButtonCustomize } from "../base/button-loading";
 import Loading from "../base/Loading";
 import ConversationMenu from "./_menu";
 import { ConversationLoading } from "./skeleton-loading";
+import { useMessageHandler } from "@/context/message-handler-context";
 
 export const BoxStyled = styled(Box)(({ theme }) => ({
   padding: "8px",
@@ -57,7 +61,7 @@ const LastMessageItem = ({
           },
         ]}
       >
-        {lastMsg.content}
+        {lastMsg?.content}
       </Typography>
       <Typography
         level="body-xs"
@@ -70,7 +74,7 @@ const LastMessageItem = ({
           },
         ]}
       >
-        {getDurationDate(lastMsg.createdAt)}
+        {getDurationDate(lastMsg?.createdAt)}
       </Typography>
     </Box>
   );
@@ -186,6 +190,63 @@ const ConversationItem = ({
 };
 const ConversationItemMemo = memo(ConversationItem);
 
+const ConversationItemTemp = () => {
+  const theme = useTheme();
+  const router = useRouter();
+  const path = usePathname();
+  const { getUserNewGroup } = useMessageHandler();
+  const { conversationTemp, setConversationTemp } = useStore(
+    useConversationTemp,
+    (state) => state
+  );
+
+  useEffect(() => {
+    if (path.includes("workspace/t/new")) {
+      setConversationTemp(true);
+      return;
+    }
+    getUserNewGroup([]);
+    setConversationTemp(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [path]);
+
+  return (
+    <>
+      {conversationTemp && (
+        <Link href={"workspace/new"}>
+          <BoxStyled
+            sx={[
+              {
+                backgroundColor: theme.palette.custom.softBlue,
+                padding: "16px 10px",
+                fontWeight: 600,
+                fontSize: "14px",
+              },
+            ]}
+          >
+            <Avatar alt="" variant="outlined" />
+            {conversationTemp.name}
+            <IconButtonCustomize
+              icon={X}
+              variant="outlined"
+              sx={{
+                position: "absolute",
+                right: "10px",
+                borderRadius: "50%",
+              }}
+              handleOnClick={() => {
+                router.back();
+                setConversationTemp(false);
+              }}
+            />
+          </BoxStyled>
+        </Link>
+      )}
+    </>
+  );
+};
+const ConversationItemTempMemo = memo(ConversationItemTemp);
+
 type RenderConversationProps = {
   dataFlat: any[];
   isLoading: boolean;
@@ -255,6 +316,7 @@ const ListConversation = () => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationStore, dataFlat]);
+
   return (
     <Box
       className="h-[calc(100vh-186px)] overflow-y-auto custom-scrollbar"
@@ -264,6 +326,7 @@ const ListConversation = () => {
         },
       }}
     >
+      <ConversationItemTempMemo />
       <RenderConversation
         dataFlat={dataFlat}
         isLoading={isLoading}

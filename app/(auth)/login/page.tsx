@@ -2,20 +2,20 @@
 import auth from "@/apiRequest/auth";
 import { Form } from "@/components/ui/form";
 import useDocumentTitle from "@/hooks/use-document-title";
-import { useToast } from "@/hooks/use-toast";
+import { useNotification } from "@/hooks/use-notification";
 import useUserDetailStore, { UserType } from "@/stores/user-store";
 import { DeviceType } from "@/types";
 import { getDevice } from "@/utils/getDevice";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@mui/joy";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { AuthWrap } from "../_components/auth-wrap";
 import { InputWithLabel } from "../_components/input-with-label";
-import Link from "next/link";
 const formSchema = z.object({
   // fullname: z.string().min(2, {
   //   message: "Có vẻ như tên của bạn quá ngắn",
@@ -29,8 +29,9 @@ const formSchema = z.object({
 export default function Page() {
   useDocumentTitle("Đăng nhập");
   const saveUser = useUserDetailStore((state) => state.saveUser);
+  const { contextHolder, openNotification } = useNotification();
   const [device, setDevice] = useState<DeviceType | null>(null);
-
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     // Chỉ chạy trên client-side
     if (typeof window !== "undefined") {
@@ -44,7 +45,6 @@ export default function Page() {
     }
   }, []);
 
-  const { toast } = useToast();
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -56,28 +56,33 @@ export default function Page() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!device?.type || !device?.device_token) return;
-
-    const { email, password } = values;
-    const response = await auth.login({
-      email,
-      password,
-      type: device.type,
-      device_token: device.device_token,
-    });
-
-    if (response) {
-      saveUser(response as UserType);
-      router.push("/workspace");
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Đăng nhập thất bại",
-        description: "Email hoặc mật khẩu không chính xác",
+    try {
+      const { email, password } = values;
+      setLoading(true);
+      const response = await auth.login({
+        email,
+        password,
+        type: device.type,
+        device_token: device.device_token,
       });
+
+      if (response) {
+        localStorage.setItem("access_token", response.accessToken);
+        saveUser(response as UserType);
+        router.push("/workspace");
+      }
+    } catch (error: any) {
+      openNotification({
+        title: "Đăng nhập thất bại",
+        description: error?.data?.message || error?.message,
+      });
+    } finally {
+      setLoading(false);
     }
   }
   return (
     <AuthWrap>
+      {contextHolder}
       <div className="pt-4 pb-10">
         <h1 className="pb-3 font-bold text-3xl flex gap-3">
           Welcome back{" "}
@@ -100,7 +105,7 @@ export default function Page() {
           />
 
           <div className="text-right">
-            <Button variant="soft" loading={false} type="submit">
+            <Button variant="solid" loading={loading} type="submit">
               Đăng nhập
             </Button>
           </div>

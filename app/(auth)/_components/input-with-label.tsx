@@ -36,7 +36,6 @@ export function InputWithLabel({
   prefix = "",
 }: Props) {
   const form = useFormContext();
-  console.log("form", form);
   const fieldTitleNoSpaces = fieldTitle.replaceAll(" ", "-");
   useEffect(() => {
     if (!form.getValues(nameInSchema)) {

@@ -1,18 +1,23 @@
 import servicesApi from "@/services/api";
+import { UserDetail } from "@/types";
 
 const auth = {
-  login: async (data: any) => {
+  login: async (data: any): Promise<UserDetail | undefined> => {
     try {
-      return await servicesApi.post("/auth/login", data);
+      const res = await servicesApi.post("/auth/login", data);
+      if (res?.statusCode === 200) return res.user;
+      return undefined;
     } catch (error) {
-      console.log(error);
+      throw error;
     }
   },
-  register: async (data: any) => {
+  register: async (data: any): Promise<UserDetail | undefined> => {
     try {
-      return await servicesApi.post("/auth/register", data);
+      const res = await servicesApi.post("/auth/register", data);
+      if (res?.statusCode === 201) return res.user;
+      return undefined;
     } catch (error) {
-      console.log(error);
+      throw error;
     }
   },
 

@@ -31,7 +31,7 @@ axiosInstance.interceptors.response.use(
       router.push("/login");
       return;
     }
-    return error;
+    throw error;
   }
 );
 

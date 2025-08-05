@@ -1,4 +1,4 @@
-import { bgImgConfig } from "@/constants/chat.config";
+"use client";
 import { useMessageHandler } from "@/context/message-handler-context";
 import { MessageType, Params } from "@/types";
 import { Box, IconButton, Sheet, Stack, styled, Textarea } from "@mui/joy";
@@ -6,6 +6,7 @@ import { ImagePlus, Paperclip, SendHorizonal } from "lucide-react";
 import { useCallback, useState } from "react";
 import { IconButtonCustomize } from "../base/button-loading";
 import { EmojiPopover } from "./emojis";
+import { useRouter } from "next/navigation";
 
 const SheetStyles = styled(Sheet)(() => ({
   width: "100%",
@@ -30,14 +31,16 @@ const TextareaStyles = styled(Textarea)(({ theme }) => ({
 
 export const InputBox = ({
   params,
-  scrollToBottom,
+  scrollToBottom = () => {},
+  bgColor,
 }: {
   params: Params;
-  scrollToBottom: () => void;
+  scrollToBottom?: () => void;
+  bgColor?: string;
 }) => {
-  const { updateHandler } = useMessageHandler();
+  const { updateHandler, getPrivateChatIdBetweenUsers } = useMessageHandler();
+  const router = useRouter();
   const [messageInput, setMessageInput] = useState("");
-
   const handleSubmit = useCallback(async () => {
     if (messageInput.trim() === "") return;
     try {
@@ -46,14 +49,25 @@ export const InputBox = ({
         message: messageInput.trim(),
         type: MessageType.TEXT,
       });
+
+      if (params.id === "new" && getPrivateChatIdBetweenUsers?.()) {
+        router.replace(`/workspace/t/${getPrivateChatIdBetweenUsers()}`);
+      }
       setMessageInput("");
+
       setTimeout(() => {
         scrollToBottom();
       }, 0);
     } catch (error) {
       console.error("Error sending message:", error);
     }
-  }, [messageInput, params.id, updateHandler]);
+  }, [
+    messageInput,
+    params.id,
+    updateHandler,
+    getPrivateChatIdBetweenUsers,
+    scrollToBottom,
+  ]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -86,8 +100,7 @@ export const InputBox = ({
   return (
     <SheetStyles
       sx={{
-        backgroundColor:
-          bgImgConfig["025c84a0-b438-4c8a-b8e9-8a52a025a7b9"].color,
+        backgroundColor: bgColor,
       }}
     >
       <Stack
@@ -99,7 +112,7 @@ export const InputBox = ({
           padding: "12px 10px",
         }}
       >
-        <Box className="mb-auto flex">
+        <Box className="mb-auto flex gap-2">
           <IconButtonCustomize icon={Paperclip} />
           <IconButtonCustomize icon={ImagePlus} />
         </Box>

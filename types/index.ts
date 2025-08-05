@@ -1,3 +1,5 @@
+import { UserType } from "@/stores/user-store";
+
 export type DeviceType = {
   type: string;
   device_token: string;
@@ -81,6 +83,11 @@ export type MessageRead = {
 };
 
 export type GroupPosition = "start" | "end" | "middle" | "single";
+export type ChatItemType = "group" | "private" | string;
+export enum ChatRole {
+  ADMIN = "admin",
+  MEMBER = "member",
+}
 
 export type Message = {
   id: string;
@@ -105,7 +112,7 @@ export type ChatItem = {
   updatedAt: string;
   deletedAt: string | null;
   name: string;
-  type: "group" | "direct" | string;
+  type: ChatItemType;
   avatar?: string;
   userIds: string[];
   lastMessage: Message;
@@ -125,3 +132,8 @@ export interface EmojiIcon {
 }
 
 export type Params = { id: string };
+export type ApiParams = { page: number; limit: number };
+
+export type UserPrivateConversation = UserType & {
+  chatId?: string;
+};

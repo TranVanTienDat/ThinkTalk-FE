@@ -9,8 +9,8 @@ import {
 } from "use-context-selector";
 
 import auth from "@/apiRequest/auth";
+import Image from "next/image";
 import { useEffect, useState, type FC, type ReactNode } from "react";
-import Loading from "@/components/base/Loading";
 import { v4 as uuidv4 } from "uuid";
 
 export type AppContextValue = {
@@ -58,7 +58,17 @@ export const AppContextProvider: FC<AppContextProviderProps> = ({
     }
   }, [userResponse]);
 
-  if (!userDetail) return <Loading type="app" />;
+  if (!userDetail)
+    return (
+      <div className="flex w-full items-center justify-center h-full">
+        <Image
+          alt="logo"
+          src="/images/logo-max-size.png"
+          width={200}
+          height={90}
+        />
+      </div>
+    );
 
   return (
     <AppContext.Provider

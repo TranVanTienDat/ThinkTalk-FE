@@ -87,8 +87,10 @@ export const MessageItem = ({ msg, isMe }: { msg: Message; isMe: boolean }) => {
     }
   }, [inView, msg, markAsRead]);
 
+  const showRef =
+    msg.read || (msg.sendStatus && !msg.sendStatus.includes("sent"));
   return (
-    <div className="mb-[2px]" ref={!msg.read ? ref : null}>
+    <div className="mb-[2px]" ref={showRef ? null : ref}>
       {msg.type !== MessageType.SYSTEM ? (
         <RenderByTypeText msg={msg} isMe={isMe} />
       ) : (
@@ -109,12 +111,12 @@ const ShowIsRead = ({
     <Stack direction="row" justifyContent="flex-end" sx={{ gap: "2px" }}>
       {!!data?.length &&
         data.map((item) => {
-          if (senderId === item.user.id) return null;
+          if (senderId === item?.user?.id) return null;
           return (
             <Avatar
               key={item.id}
               sx={{ width: "12px", height: "12px" }}
-              src={item.user.avatar || ""}
+              src={item?.user?.avatar || ""}
             />
           );
         })}

@@ -1,7 +1,14 @@
-import { GroupPosition, Message } from "@/types";
+import {
+  GroupPosition,
+  Message,
+  MessageType,
+  SendStatus,
+  UserDetail,
+} from "@/types";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
+
 dayjs.extend(utc);
 dayjs.extend(timezone);
 export const mappingNotificationType = {
@@ -102,4 +109,34 @@ export function groupMessages(messages: Message[]): any[] {
       group: position ? { position } : undefined,
     };
   });
+}
+
+type CreateMessageInput = {
+  chatId: string;
+  content: string;
+  type: MessageType;
+  user: Omit<UserDetail, "accessToken" | "refreshToken">;
+  msgId: string;
+};
+
+export function createMessage({
+  chatId,
+  content,
+  type,
+  user,
+  msgId,
+}: CreateMessageInput): Message {
+  return {
+    id: msgId,
+    chatId,
+    content,
+    type,
+    user,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    deletedAt: null,
+    senderId: user.id,
+    messageRead: [],
+    sendStatus: SendStatus.SENDING,
+  };
 }

@@ -8,12 +8,13 @@ interface Options {
 }
 
 export default function useDocumentTitle(
-  title: string,
+  title?: string,
   favicon?: string,
   options?: Options
 ) {
   useEffect(() => {
     // Format title
+    if (!title) return;
     const prefix = options?.prefix ? `${options.prefix} - ` : "";
     const suffix = options?.suffix ? ` - ${options.suffix}` : "";
     document.title = `${prefix}${

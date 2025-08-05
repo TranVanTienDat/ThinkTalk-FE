@@ -25,15 +25,20 @@ const sheetStyles = {
 
 export default function MessagesPane({
   params,
-}: // parentRef,
+}: // parentRef
 {
   params: Params;
   parentRef: React.RefObject<HTMLDivElement>;
 }) {
   const { user: userCurrent } = useAppContext();
-  const { msgRead } = useMessageHandler();
+  const { msgRead, getPrivateChatIdBetweenUsers } = useMessageHandler();
+
+  const privateChatId = getPrivateChatIdBetweenUsers?.();
+  const id =
+    params.id !== "new" ? params.id : privateChatId ? privateChatId : "";
   const { data, hasNextPage, isLoading, fetchNextPage } = useMessages({
-    id: params.id,
+    id: id,
+    enabled: !!privateChatId,
   });
 
   const { ref, inView } = useInView({
@@ -46,12 +51,13 @@ export default function MessagesPane({
       fetchNextPage?.();
     }
   }, [inView, fetchNextPage, hasNextPage]);
+  console.log("data", data);
   const sortMessageMemo = useMemo(() => {
     const dataFlat = data?.pages.flatMap((page) => page.data) || [];
     const latestReadByUser = new Map<string, string>();
     Object.entries(msgRead).forEach(([msgId, reads]) => {
       reads.forEach((read) => {
-        const userId = read.user.id;
+        const userId = read?.user?.id;
         if (!latestReadByUser.has(userId)) {
           latestReadByUser.set(userId, msgId);
         }
@@ -61,9 +67,9 @@ export default function MessagesPane({
     const dataMerges = dataFlat.map((msg: Message) => ({
       ...msg,
       messageRead: (msgRead[msg.id] || []).filter(
-        (read) => latestReadByUser.get(read.user.id) === msg.id
+        (read) => latestReadByUser.get(read?.user?.id) === msg.id
       ),
-      read: msg.messageRead.some((item) => item.user.id === userCurrent.id),
+      read: msg.messageRead.some((item) => item?.user?.id === userCurrent.id),
     }));
 
     const sortedMessages = dataMerges.sort((a, b) =>
@@ -84,7 +90,7 @@ export default function MessagesPane({
   // });
 
   const isMe = (msg: Message) => {
-    return msg.user.id === userCurrent.id;
+    return msg?.user?.id === userCurrent.id;
   };
   // console.log("sortMessageMemo", sortMessageMemo);
   return (

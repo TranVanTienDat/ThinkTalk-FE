@@ -1,11 +1,26 @@
 import { emojiWithCode } from "@/utils";
-import { Bell, MessageCircle } from "lucide-react";
+import {
+  Bell,
+  CircleUser,
+  Handshake,
+  LogOut,
+  MessageCircle,
+  UserCog,
+} from "lucide-react";
 
 export const tabItems = [
   { icon: MessageCircle, size: 20, label: "Messages" },
   { icon: Bell, size: 20, label: "Notifications" },
   //   { icon: Settings, size: 20, label: "Settings" },
 ];
+
+export const menuAccount = [
+  { icon: LogOut, size: 18, label: "Đăng xuất" },
+  { icon: UserCog, size: 18, label: "Cài đặt và bảo mật" },
+  { icon: CircleUser, size: 18, label: "Tài khoản" },
+  { icon: Handshake, size: 18, label: "Đóng góp ý kiến" },
+];
+
 const emojiFace = [
   "😀",
   "😃",

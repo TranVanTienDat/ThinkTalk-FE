@@ -22,7 +22,13 @@ const fetchConversations = async ({
   };
 };
 
-export const useMessages = ({ id }: { id: string }) => {
+export const useMessages = ({
+  id,
+  enabled = true,
+}: {
+  id: string;
+  enabled?: boolean;
+}) => {
   const { setMessageRead } = useMessageHandler();
 
   const query = useInfiniteQuery({
@@ -32,8 +38,9 @@ export const useMessages = ({ id }: { id: string }) => {
     getNextPageParam: (lastPage) => {
       return lastPage.nextCursor;
     },
-    staleTime: 60 * 1000, // 1 phút
+    // staleTime: 60 * 1000, // 1 phút
     refetchOnWindowFocus: false,
+    enabled: enabled,
   });
   const { isLoading, data } = query;
 

@@ -2,7 +2,7 @@
 import auth from "@/apiRequest/auth";
 import { Form } from "@/components/ui/form";
 import useDocumentTitle from "@/hooks/use-document-title";
-import { useToast } from "@/hooks/use-toast";
+import { useNotification } from "@/hooks/use-notification";
 import useUserDetailStore, { UserType } from "@/stores/user-store";
 import { DeviceType } from "@/types";
 import { getDevice } from "@/utils/getDevice";
@@ -18,7 +18,7 @@ import { AuthWrap } from "../_components/auth-wrap";
 import { InputWithLabel } from "../_components/input-with-label";
 
 const formSchema = z.object({
-  fullname: z.string().min(2, {
+  fullName: z.string().min(2, {
     message: "Có vẻ như tên của bạn quá ngắn",
   }),
   email: z.string().email({ message: "Email không hợp lệ" }),
@@ -30,16 +30,19 @@ const formSchema = z.object({
 export default function Page() {
   useDocumentTitle("Đăng kí");
   const saveUser = useUserDetailStore((state) => state.saveUser);
-  const { toast } = useToast();
+  const { contextHolder, openNotification } = useNotification();
+
   const router = useRouter();
 
   const [device, setDevice] = useState<DeviceType | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Chỉ chạy trên client-side
     if (typeof window !== "undefined") {
       import("device-uuid").then(({ DeviceUUID }) => {
         const du = new DeviceUUID().parse();
+        console.log("du", du);
         setDevice({
           type: du.browser,
           device_token: getDevice(du),
@@ -51,7 +54,7 @@ export default function Page() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullname: "",
+      fullName: "",
       email: "",
       password: "",
     },
@@ -60,28 +63,34 @@ export default function Page() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!device?.type || !device?.device_token) return;
 
-    const { email, password, fullname } = values;
-    const response = await auth.register({
-      email,
-      password,
-      fullname,
-      type: device.type,
-      device_token: device.device_token,
-    });
-
-    if (response) {
-      saveUser(response as UserType);
-      router.push("/workspace");
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Đăng kí thất bại",
-        description: "Có lỗi xảy ra, vui lòng thử lại",
+    setLoading(true);
+    try {
+      const { email, password, fullName } = values;
+      const response = await auth.register({
+        email,
+        password,
+        fullName,
+        type: device.type,
+        device_token: device.device_token,
       });
+      if (response) {
+        localStorage.setItem("access_token", response.accessToken);
+        saveUser(response as UserType);
+        router.push("/workspace");
+      }
+    } catch (error: any) {
+      openNotification({
+        title: "Đăng kí thất bại",
+        description: error?.data?.message || error?.message,
+      });
+    } finally {
+      setLoading(false);
     }
   }
+
   return (
     <AuthWrap>
+      {contextHolder}
       <div className="flex justify-center pt-2 pb-2">
         <Image
           src="/images/logo-max-size.png"
@@ -96,7 +105,7 @@ export default function Page() {
           <InputWithLabel
             placeholder="Nhập tên đầy đủ của bạn"
             fieldTitle="Fullname"
-            nameInSchema="fullname"
+            nameInSchema="fullName"
           />
 
           <InputWithLabel
@@ -111,7 +120,7 @@ export default function Page() {
           />
 
           <div className="text-right">
-            <Button variant="soft" loading={false} type="submit">
+            <Button variant="solid" loading={loading} type="submit">
               Đăng kí
             </Button>
           </div>

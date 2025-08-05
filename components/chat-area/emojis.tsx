@@ -115,14 +115,16 @@ const EmojiTab = ({ getEmoji }: EmojiPopoverProps) => {
 export const EmojiPopover = ({ getEmoji }: EmojiPopoverProps) => {
   return (
     <Popover content={<EmojiTab getEmoji={getEmoji} />} trigger="click">
-      <IconButtonCustomize
-        icon={Laugh}
-        sx={{
-          "&:hover": {
-            backgroundColor: "transparent",
-          },
-        }}
-      />
+      <span>
+        <IconButtonCustomize
+          icon={Laugh}
+          sx={{
+            "&:hover": {
+              backgroundColor: "transparent",
+            },
+          }}
+        />
+      </span>
     </Popover>
   );
 };

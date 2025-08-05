@@ -52,16 +52,22 @@ type ButtonIconCustomizeProps = {
   icon: ForwardRefExoticComponent<
     Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>
   >;
-  size?: number;
-  color?: any;
+  sizeIcon?: number;
+  colorIcon?: string;
   handleOnClick?: () => void;
 } & IconButtonProps;
-export const IconButtonCustomize = (props: ButtonIconCustomizeProps) => {
+export const IconButtonCustomize = ({
+  icon,
+  sizeIcon,
+  colorIcon,
+  handleOnClick,
+  ...restProps
+}: ButtonIconCustomizeProps) => {
   return (
-    <IconButton {...props}>
-      {React.createElement(props.icon, {
-        color: props.color,
-        size: props.size,
+    <IconButton {...restProps} onClick={handleOnClick}>
+      {React.createElement(icon, {
+        color: colorIcon,
+        size: sizeIcon,
       })}
     </IconButton>
   );

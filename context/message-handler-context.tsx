@@ -3,14 +3,18 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 // import { MessageType } from "antd/es/message/interface";
+import { Option } from "@/app/workspace/t/[id]/_components/new-conversation";
+import { useSocketEmit } from "@/hooks/use-socket-emit";
+import { useSocketEvent } from "@/hooks/use-socket-event";
 import {
   ChatItem,
+  ChatRole,
   Message,
   MessageRead,
   MessageType,
   SendStatus,
-  UserDetail,
 } from "@/types";
+import { createMessage } from "@/utils";
 import {
   createContext,
   useCallback,
@@ -20,26 +24,36 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useAppContext } from "./app-context";
-import { useSocketEvent } from "@/hooks/use-socket-event";
-import { useSocketEmit } from "@/hooks/use-socket-emit";
-import { v4 as uuidv4 } from "uuid";
 import { useDebouncedCallback } from "use-debounce";
-export interface Response {
+import { v4 as uuidv4 } from "uuid";
+import { useAppContext } from "./app-context";
+import { usePathname, useRouter } from "next/navigation";
+
+type ResponseSw = {
   status: "success" | "error";
-  data: Message | MessageInputType;
   message: string;
   userId?: string;
-}
-
-type MessageContextType = {
-  updateHandler: (message: any) => void;
-  setMessageRead: (msgId: string, msgRead: MessageRead[]) => void;
-  msgRead: Record<string, MessageRead[]>;
-  markAsRead: (messageId: string, chatId: string) => void;
+};
+export type ResponseMsg = ResponseSw & {
+  data: Message | MessageInputType;
 };
 
-type MessageInputType = {
+export type ResponseCreateGroup = ResponseSw & {
+  data: ChatItem;
+  sender: { id: string };
+};
+
+type MessageContextType = {
+  msgRead: Record<string, MessageRead[]>;
+  userNewGroup: Option[];
+  updateHandler: (message: any) => void;
+  setMessageRead: (msgId: string, msgRead: MessageRead[]) => void;
+  markAsRead: (messageId: string, chatId: string) => void;
+  getUserNewGroup: (value: Option[]) => void;
+  getPrivateChatIdBetweenUsers: () => string | undefined;
+};
+
+export type MessageInputType = {
   chatId: string;
   message: string;
   type: MessageType;
@@ -56,136 +70,264 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const { user } = useAppContext();
   const { emit } = useSocketEmit();
+  const pathName = usePathname();
+  const router = useRouter();
   const pendingReads = useRef<Map<string, PendingRead>>(new Map());
+  const [userNewGroup, setUserNewGroup] = useState<Option[]>([]);
   const tempMsgIdRef = useRef("");
-
   const [msgRead, setMsgRead] = useState<Record<string, MessageRead[]>>({});
 
-  useSocketEvent("sended-message", (response: Response) => {
+  // useSocketEvent("receive-message", (response: ResponseMsg) => {
+  //   const { status, data: msgRes, userId } = response;
+  //   console.log("res", response);
+  //   if (status === "success" && (msgRes as Message).senderId === user.id) {
+  //     queryClient.setQueryData([`msg-${msgRes.chatId}`], (old: any) => {
+  //       if (!old) return old;
+
+  //       return {
+  //         ...old,
+  //         pages: old.pages.map((page: any) => {
+  //           return {
+  //             ...page,
+  //             data: page.data.map((item: Message) => {
+  //               if (item.id !== tempMsgIdRef.current) {
+  //                 const { sendStatus, ...rest } = item;
+  //                 return {
+  //                   ...rest,
+  //                 };
+  //               }
+
+  //               return {
+  //                 ...item,
+  //                 sendStatus: SendStatus.SENT,
+  //               };
+  //             }),
+  //           };
+  //         }),
+  //       };
+  //     });
+  //   } else if (
+  //     status === "success" &&
+  //     (msgRes as Message).senderId !== user.id
+  //   ) {
+  //     queryClient.setQueryData([`msg-${msgRes.chatId}`], (old: any) => {
+  //       if (!old) return old;
+
+  //       return {
+  //         ...old,
+  //         pages: old.pages.map((page: any) => {
+  //           return {
+  //             ...page,
+  //             data: [msgRes, ...page.data].map((item: Message) => {
+  //               const { sendStatus, ...rest } = item;
+  //               return {
+  //                 ...rest,
+  //               };
+  //             }),
+  //           };
+  //         }),
+  //       };
+  //     });
+
+  //     queryClient.setQueryData(["conversations"], (old: any) => {
+  //       if (!old) return old;
+
+  //       return {
+  //         ...old,
+  //         pages: old.pages.map((page: any) => {
+  //           // Tìm index của item cần cập nhật
+  //           const itemIndex = page.data.findIndex(
+  //             (item: ChatItem) => item.id === msgRes.chatId
+  //           );
+
+  //           if (itemIndex === -1) {
+  //             const newChat: ChatItem = {
+  //               ...((msgRes as Message).chat as ChatItem),
+  //               isRead: false,
+  //               lastMessage: msgRes as Message,
+  //             };
+
+  //             return { ...page, data: [newChat, ...page.data] };
+  //           }
+
+  //           // Tạo bản sao của data để không mutate trực tiếp
+  //           const newData = [...page.data];
+
+  //           // Cập nhật item
+  //           const updatedItem: ChatItem = {
+  //             ...newData[itemIndex],
+  //             lastMessage: msgRes as Message,
+  //             updatedAt:
+  //               newData[itemIndex]?.updatedAt || new Date().toISOString(),
+  //             createdAt: newData[itemIndex].createdAt,
+  //             isRead: false,
+  //           };
+  //           // Gán item đã cập nhật
+  //           newData[itemIndex] = updatedItem;
+
+  //           // Di chuyển item lên đầu mảng
+  //           const [movedItem] = newData.splice(itemIndex, 1);
+  //           newData.unshift(movedItem);
+
+  //           return {
+  //             ...page,
+  //             data: newData,
+  //           };
+  //         }),
+  //       };
+  //     });
+  //   } else if (status === "error" && userId === user.id) {
+  //     queryClient.setQueryData(
+  //       [`msg-${(msgRes as Message).chatId}`],
+  //       (old: any) => {
+  //         if (!old) return old;
+
+  //         return {
+  //           ...old,
+  //           pages: old.pages.map((page: any) => {
+  //             return {
+  //               ...page,
+  //               data: page.data.map((item: Message) => {
+  //                 if (item.id === tempMsgIdRef.current) {
+  //                   return {
+  //                     ...item,
+  //                     sendStatus: SendStatus.FAILED,
+  //                   };
+  //                 }
+  //                 return item;
+  //               }),
+  //             };
+  //           }),
+  //         };
+  //       }
+  //     );
+  //   }
+  // });
+
+  useSocketEvent("receive-message", (response: ResponseMsg) => {
     const { status, data: msgRes, userId } = response;
-    console.log("response", response);
 
-    if (status === "success" && (msgRes as Message).senderId === user.id) {
-      queryClient.setQueryData([`msg-${msgRes.chatId}`], (old: any) => {
+    // Chỉ xử lý các trạng thái 'success' hoặc 'error'
+    if (status !== "success" && status !== "error") return;
+
+    const message = msgRes as Message;
+    const isCurrentUser = userId === user.id;
+    const isSender = message.senderId === user.id;
+
+    // Hàm helper để chuẩn hóa tin nhắn (loại bỏ sendStatus)
+    const normalizeMessage = (msg: Message) => {
+      const { sendStatus, ...rest } = msg;
+      return rest;
+    };
+
+    // Cập nhật dữ liệu tin nhắn
+    if (status === "success" || (status === "error" && isCurrentUser)) {
+      queryClient.setQueryData([`msg-${message.chatId}`], (old: any) => {
         if (!old) return old;
 
         return {
           ...old,
           pages: old.pages.map((page: any) => {
-            return {
-              ...page,
-              data: page.data.map((item: Message) => {
-                if (item.id !== tempMsgIdRef.current) {
-                  const { sendStatus, ...rest } = item;
-                  return {
-                    ...rest,
-                  };
-                }
+            let updatedData = page.data;
 
-                return {
-                  ...item,
-                  sendStatus: SendStatus.SENT,
-                };
-              }),
-            };
+            if (status === "success") {
+              if (isSender) {
+                // Cập nhật trạng thái gửi cho tin nhắn của người dùng hiện tại
+                updatedData = updatedData.map((item: Message) =>
+                  item.id === tempMsgIdRef.current
+                    ? { ...item, sendStatus: SendStatus.SENT }
+                    : normalizeMessage(item)
+                );
+              } else {
+                // Thêm tin nhắn mới và chuẩn hóa tất cả
+                updatedData = [
+                  normalizeMessage(message),
+                  ...updatedData.map(normalizeMessage),
+                ];
+              }
+            } else if (status === "error" && isCurrentUser) {
+              // Đánh dấu tin nhắn gửi thất bại
+              updatedData = updatedData.map((item: Message) =>
+                item.id === tempMsgIdRef.current
+                  ? { ...item, sendStatus: SendStatus.FAILED }
+                  : item
+              );
+            }
+
+            return { ...page, data: updatedData };
           }),
         };
       });
-    } else if (
-      status === "success" &&
-      (msgRes as Message).senderId !== user.id
-    ) {
-      queryClient.setQueryData([`msg-${msgRes.chatId}`], (old: any) => {
-        if (!old) return old;
+    }
 
-        return {
-          ...old,
-          pages: old.pages.map((page: any) => {
-            return {
-              ...page,
-              data: [msgRes, ...page.data].map((item: Message) => {
-                const { sendStatus, ...rest } = item;
-                return {
-                  ...rest,
-                };
-              }),
-            };
-          }),
-        };
-      });
-
+    // Cập nhật danh sách hội thoại cho tin nhắn nhận được
+    if (status === "success" && !isSender) {
       queryClient.setQueryData(["conversations"], (old: any) => {
         if (!old) return old;
 
         return {
           ...old,
           pages: old.pages.map((page: any) => {
-            // Tìm index của item cần cập nhật
-            const itemIndex = page.data.findIndex(
-              (item: ChatItem) => item.id === msgRes.chatId
+            const data = [...page.data];
+            const itemIndex = data.findIndex(
+              (item: ChatItem) => item.id === message.chatId
             );
 
             if (itemIndex === -1) {
+              // Thêm hội thoại mới
               const newChat: ChatItem = {
-                ...((msgRes as Message).chat as ChatItem),
+                ...(message.chat as ChatItem),
                 isRead: false,
-                lastMessage: msgRes as Message,
+                lastMessage: message,
               };
-
-              return { ...page, data: [newChat, ...page.data] };
+              return { ...page, data: [newChat, ...data] };
             }
 
-            // Tạo bản sao của data để không mutate trực tiếp
-            const newData = [...page.data];
-
-            // Cập nhật item
+            // Cập nhật hội thoại hiện có
             const updatedItem: ChatItem = {
-              ...newData[itemIndex],
-              lastMessage: msgRes as Message,
-              updatedAt:
-                newData[itemIndex]?.updatedAt || new Date().toISOString(),
-              createdAt: newData[itemIndex].createdAt,
+              ...data[itemIndex],
+              lastMessage: message,
+              updatedAt: data[itemIndex]?.updatedAt || new Date().toISOString(),
+              createdAt: data[itemIndex].createdAt,
               isRead: false,
             };
-            // Gán item đã cập nhật
-            newData[itemIndex] = updatedItem;
 
-            // Di chuyển item lên đầu mảng
-            const [movedItem] = newData.splice(itemIndex, 1);
-            newData.unshift(movedItem);
+            // Di chuyển lên đầu danh sách
+            data.splice(itemIndex, 1);
+            data.unshift(updatedItem);
 
-            return {
-              ...page,
-              data: newData,
-            };
+            return { ...page, data };
           }),
         };
       });
-    } else if (status === "error" && userId === user.id) {
-      queryClient.setQueryData(
-        [`msg-${(msgRes as Message).chatId}`],
-        (old: any) => {
-          if (!old) return old;
+    }
+  });
 
-          return {
-            ...old,
-            pages: old.pages.map((page: any) => {
-              return {
-                ...page,
-                data: page.data.map((item: Message) => {
-                  if (item.id === tempMsgIdRef.current) {
-                    return {
-                      ...item,
-                      sendStatus: SendStatus.FAILED,
-                    };
-                  }
-                  return item;
-                }),
-              };
-            }),
-          };
-        }
-      );
+  useSocketEvent("created-group", (response: ResponseCreateGroup) => {
+    const { status, data: chat, sender } = response;
+    console.log("response", response);
+    if (status === "success") {
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      // queryClient.setQueryData(["conversations"], (old: any) => {
+      //   if (!old) return old;
+
+      //   return {
+      //     ...old,
+      //     pages: [
+      //       {
+      //         data: [
+      //           {
+      //             ...chat,
+      //             senderId: sender.id,
+      //           } as ChatItem,
+      //         ],
+      //       },
+      //       ...old.pages,
+      //     ],
+      //   };
+      // });
+
+      router.replace(`/workspace/t/${chat.id}`);
     }
   });
 
@@ -248,39 +390,6 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
     [queryClient]
   );
 
-  const updateHandler = useCallback(
-    (message: MessageInputType) => {
-      tempMsgIdRef.current = uuidv4();
-      const msg: Message = {
-        id: tempMsgIdRef.current,
-        chatId: message.chatId,
-        content: message.message,
-        type: message.type,
-        user: user as Omit<UserDetail, "accessToken" | "refreshToken">,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        deletedAt: null,
-        senderId: user.id as string,
-        messageRead: [],
-        sendStatus: SendStatus.SENDING,
-      };
-      updateEventMessage(msg);
-      updateEventConversation(msg);
-      emit("send-message", { ...message });
-    },
-    [user, updateEventMessage, updateEventConversation, emit]
-  );
-
-  const setMessageRead = useCallback(
-    (msgId: string, msgRead: MessageRead[]) => {
-      setMsgRead((prev) => ({
-        ...prev,
-        [msgId]: msgRead,
-      }));
-    },
-    []
-  );
-
   const sendBatchRead = useDebouncedCallback(() => {
     if (pendingReads.current.size === 0) return;
 
@@ -296,13 +405,13 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
     }, {} as Record<string, string[]>);
 
     // Gửi từng batch theo chatId
-    console.log("log: ", readsByChat);
-    Object.entries(readsByChat).forEach(([chatId, messageIds]) => {
-      emit("messages:batch-read", {
-        messageIds,
-        chatId,
-      });
-    });
+
+    // Object.entries(readsByChat).forEach(([chatId, messageIds]) => {
+    //   emit("messages:batch-read", {
+    //     messageIds,
+    //     chatId,
+    //   });
+    // });
 
     pendingReads.current.clear();
   }, 3000); // Debounce 500ms
@@ -321,6 +430,84 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
     [sendBatchRead]
   );
 
+  const getUserNewGroup = useCallback((value: Option[]) => {
+    setUserNewGroup([...value]);
+  }, []);
+
+  const setMessageRead = useCallback(
+    (msgId: string, msgRead: MessageRead[]) => {
+      setMsgRead((prev) => ({
+        ...prev,
+        [msgId]: msgRead,
+      }));
+    },
+    []
+  );
+  const getPrivateChatIdBetweenUsers = useCallback(() => {
+    if (userNewGroup.length === 1) {
+      return userNewGroup[0].chatId;
+    }
+  }, [userNewGroup]);
+
+  const updateHandler = useCallback(
+    (message: MessageInputType) => {
+      tempMsgIdRef.current = uuidv4();
+      let msg: Message = createMessage({
+        chatId: message.chatId,
+        content: message.message,
+        type: message.type,
+        msgId: tempMsgIdRef.current,
+        user,
+      });
+      if (
+        !pathName.includes("/workspace/t/new") ||
+        getPrivateChatIdBetweenUsers?.()
+      ) {
+        msg = {
+          ...msg,
+          chatId: (getPrivateChatIdBetweenUsers() as string) ?? message.chatId,
+        };
+        updateEventMessage(msg);
+        updateEventConversation(msg);
+        emit("send-message", { ...message, chatId: msg.chatId });
+
+        return;
+      }
+
+      const newChat = {
+        name:
+          userNewGroup.length === 1
+            ? userNewGroup[0].label
+            : `Nhóm ${userNewGroup.map((obj) => obj.label).join(", ")}`,
+        avatar: userNewGroup.length === 1 ? userNewGroup[0].avatar : null,
+        type: userNewGroup.length === 1 ? "private" : "group",
+        chatMembers: userNewGroup.map((item) => ({
+          userId: item.value,
+          role: ChatRole.MEMBER,
+        })),
+        message: {
+          content: message.message,
+          type: message.type,
+        },
+      };
+
+      emit("create-group", {
+        ...newChat,
+      });
+
+      console.log("end");
+    },
+    [
+      user,
+      updateEventMessage,
+      updateEventConversation,
+      emit,
+      getPrivateChatIdBetweenUsers,
+      userNewGroup,
+      pathName,
+    ]
+  );
+
   // Xử lý khi component unmount
   useEffect(() => {
     return () => {
@@ -332,10 +519,13 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
   return (
     <MessageContext.Provider
       value={{
-        updateHandler,
         msgRead,
+        userNewGroup,
+        updateHandler,
         setMessageRead,
         markAsRead,
+        getUserNewGroup,
+        getPrivateChatIdBetweenUsers,
       }}
     >
       {children}

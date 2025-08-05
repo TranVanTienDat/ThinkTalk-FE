@@ -122,10 +122,8 @@ const generateThemeOptions = (): CssVarsThemeOptions => {
       JoyIconButton: {
         styleOverrides: {
           root: {
-            "&:hover": {
-              color: colors.primary[700],
-              backgroundColor: colors.custom.softBlue,
-            },
+            color: colors.primary[700],
+            backgroundColor: colors.custom.softBlue,
           },
         },
       },

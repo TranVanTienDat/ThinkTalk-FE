@@ -1,22 +1,23 @@
 import { create } from "zustand";
 
-export type UserType = null | {
+export type UserType = {
   id: string;
+  createdAt: Date;
+  updatedAt: Date;
   email: string;
-  password: string;
   fullName: string;
   nickname: string;
   avatar: string;
 };
 
 interface BearState {
-  user: UserType;
-  saveUser: (by: UserType) => void;
+  user: UserType | null;
+  saveUser: (by: UserType | null) => void;
 }
 
 const useUserDetailStore = create<BearState>()((set) => ({
   user: null,
-  saveUser: (user: UserType) => set(() => ({ user })),
+  saveUser: (user: UserType | null) => set(() => ({ user })),
 }));
 
 export default useUserDetailStore;
