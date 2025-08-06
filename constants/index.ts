@@ -15,10 +15,10 @@ export const tabItems = [
 ];
 
 export const menuAccount = [
-  { icon: LogOut, size: 18, label: "Đăng xuất" },
-  { icon: UserCog, size: 18, label: "Cài đặt và bảo mật" },
-  { icon: CircleUser, size: 18, label: "Tài khoản" },
-  { icon: Handshake, size: 18, label: "Đóng góp ý kiến" },
+  { icon: LogOut, size: 18, label: "Đăng xuất", key: "logout" },
+  { icon: UserCog, size: 18, label: "Cài đặt và bảo mật", key: "setting" },
+  { icon: CircleUser, size: 18, label: "Tài khoản", key: "account" },
+  { icon: Handshake, size: 18, label: "Đóng góp ý kiến", key: "contribute" },
 ];
 
 const emojiFace = [

@@ -40,6 +40,13 @@ export default function Page() {
         setDevice({
           type: du.browser,
           device_token: getDevice(du),
+          info: {
+            browser: du.browser,
+            version: du.version,
+            os: du.os,
+            platform: du.platform,
+            source: du.source,
+          },
         });
       });
     }
@@ -64,6 +71,7 @@ export default function Page() {
         password,
         type: device.type,
         device_token: device.device_token,
+        info: device.info,
       });
 
       if (response) {

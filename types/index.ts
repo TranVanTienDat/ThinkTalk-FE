@@ -3,6 +3,7 @@ import { UserType } from "@/stores/user-store";
 export type DeviceType = {
   type: string;
   device_token: string;
+  info: Record<string, any>;
 };
 
 export enum UserStatus {

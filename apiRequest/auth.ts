@@ -28,5 +28,13 @@ const auth = {
       throw error;
     }
   },
+
+  logout: async (data: any) => {
+    try {
+      return await servicesApi.post("/auth/logout", data);
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 export default auth;
