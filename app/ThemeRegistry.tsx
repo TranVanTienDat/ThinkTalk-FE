@@ -51,7 +51,12 @@ export default function ThemeRegistry(props: any) {
 
   return (
     <CacheProvider value={cache}>
-      <CssVarsProvider theme={theme} defaultMode="light">
+      <CssVarsProvider
+        theme={theme}
+        defaultMode="light"
+        modeStorageKey="mode-toggle-demo"
+        disableNestedContext
+      >
         <CssBaseline />
         {children}
       </CssVarsProvider>

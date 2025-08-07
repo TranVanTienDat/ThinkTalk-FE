@@ -1,10 +1,12 @@
-import { Tabs } from "@mui/joy";
+"use client";
+import { Tabs, useTheme } from "@mui/joy";
 import Sidebar from "./sidebar";
 import ConversationTab from "./conversation-tab";
 import NotificationTab from "./notification-tab";
 import { memo } from "react";
 
 const MainSidebar = () => {
+  const theme = useTheme();
   return (
     <Tabs
       aria-label="Vertical tabs"
@@ -12,7 +14,7 @@ const MainSidebar = () => {
       sx={{
         width: 350,
         borderRadius: "14px",
-        backgroundColor: "white",
+        backgroundColor: theme.palette.background,
       }}
     >
       {/* sidebar */}

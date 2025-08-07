@@ -83,8 +83,15 @@ export type MessageRead = {
   user: MsgUserStatus;
 };
 
+export type Member = {
+  createdAt: string;
+  updatedAt: string;
+  role: "member" | "admin";
+  user: UserType;
+};
+
 export type GroupPosition = "start" | "end" | "middle" | "single";
-export type ChatItemType = "group" | "private" | string;
+export type ChatItemType = "group" | "private";
 export enum ChatRole {
   ADMIN = "admin",
   MEMBER = "member",
@@ -99,7 +106,7 @@ export type Message = {
   senderId: string;
   chatId: string;
   type: MessageType;
-  user: Omit<UserDetail, "accessToken" | "refreshToken">;
+  user: UserType;
   messageRead: MessageRead[];
   sendStatus?: SendStatus;
   chat?: Omit<ChatItem, "lastMessage">;
@@ -118,6 +125,7 @@ export type ChatItem = {
   userIds: string[];
   lastMessage: Message;
   isRead?: boolean;
+  chatMembers: Member[];
 };
 
 export type Meta = {

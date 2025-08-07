@@ -77,235 +77,253 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
   const tempMsgIdRef = useRef("");
   const [msgRead, setMsgRead] = useState<Record<string, MessageRead[]>>({});
 
-  // useSocketEvent("receive-message", (response: ResponseMsg) => {
-  //   const { status, data: msgRes, userId } = response;
-  //   console.log("res", response);
-  //   if (status === "success" && (msgRes as Message).senderId === user.id) {
-  //     queryClient.setQueryData([`msg-${msgRes.chatId}`], (old: any) => {
-  //       if (!old) return old;
-
-  //       return {
-  //         ...old,
-  //         pages: old.pages.map((page: any) => {
-  //           return {
-  //             ...page,
-  //             data: page.data.map((item: Message) => {
-  //               if (item.id !== tempMsgIdRef.current) {
-  //                 const { sendStatus, ...rest } = item;
-  //                 return {
-  //                   ...rest,
-  //                 };
-  //               }
-
-  //               return {
-  //                 ...item,
-  //                 sendStatus: SendStatus.SENT,
-  //               };
-  //             }),
-  //           };
-  //         }),
-  //       };
-  //     });
-  //   } else if (
-  //     status === "success" &&
-  //     (msgRes as Message).senderId !== user.id
-  //   ) {
-  //     queryClient.setQueryData([`msg-${msgRes.chatId}`], (old: any) => {
-  //       if (!old) return old;
-
-  //       return {
-  //         ...old,
-  //         pages: old.pages.map((page: any) => {
-  //           return {
-  //             ...page,
-  //             data: [msgRes, ...page.data].map((item: Message) => {
-  //               const { sendStatus, ...rest } = item;
-  //               return {
-  //                 ...rest,
-  //               };
-  //             }),
-  //           };
-  //         }),
-  //       };
-  //     });
-
-  //     queryClient.setQueryData(["conversations"], (old: any) => {
-  //       if (!old) return old;
-
-  //       return {
-  //         ...old,
-  //         pages: old.pages.map((page: any) => {
-  //           // Tìm index của item cần cập nhật
-  //           const itemIndex = page.data.findIndex(
-  //             (item: ChatItem) => item.id === msgRes.chatId
-  //           );
-
-  //           if (itemIndex === -1) {
-  //             const newChat: ChatItem = {
-  //               ...((msgRes as Message).chat as ChatItem),
-  //               isRead: false,
-  //               lastMessage: msgRes as Message,
-  //             };
-
-  //             return { ...page, data: [newChat, ...page.data] };
-  //           }
-
-  //           // Tạo bản sao của data để không mutate trực tiếp
-  //           const newData = [...page.data];
-
-  //           // Cập nhật item
-  //           const updatedItem: ChatItem = {
-  //             ...newData[itemIndex],
-  //             lastMessage: msgRes as Message,
-  //             updatedAt:
-  //               newData[itemIndex]?.updatedAt || new Date().toISOString(),
-  //             createdAt: newData[itemIndex].createdAt,
-  //             isRead: false,
-  //           };
-  //           // Gán item đã cập nhật
-  //           newData[itemIndex] = updatedItem;
-
-  //           // Di chuyển item lên đầu mảng
-  //           const [movedItem] = newData.splice(itemIndex, 1);
-  //           newData.unshift(movedItem);
-
-  //           return {
-  //             ...page,
-  //             data: newData,
-  //           };
-  //         }),
-  //       };
-  //     });
-  //   } else if (status === "error" && userId === user.id) {
-  //     queryClient.setQueryData(
-  //       [`msg-${(msgRes as Message).chatId}`],
-  //       (old: any) => {
-  //         if (!old) return old;
-
-  //         return {
-  //           ...old,
-  //           pages: old.pages.map((page: any) => {
-  //             return {
-  //               ...page,
-  //               data: page.data.map((item: Message) => {
-  //                 if (item.id === tempMsgIdRef.current) {
-  //                   return {
-  //                     ...item,
-  //                     sendStatus: SendStatus.FAILED,
-  //                   };
-  //                 }
-  //                 return item;
-  //               }),
-  //             };
-  //           }),
-  //         };
-  //       }
-  //     );
-  //   }
-  // });
-
   useSocketEvent("receive-message", (response: ResponseMsg) => {
     const { status, data: msgRes, userId } = response;
-
-    // Chỉ xử lý các trạng thái 'success' hoặc 'error'
-    if (status !== "success" && status !== "error") return;
-
-    const message = msgRes as Message;
-    const isCurrentUser = userId === user.id;
-    const isSender = message.senderId === user.id;
-
-    // Hàm helper để chuẩn hóa tin nhắn (loại bỏ sendStatus)
-    const normalizeMessage = (msg: Message) => {
-      const { sendStatus, ...rest } = msg;
-      return rest;
-    };
-
-    // Cập nhật dữ liệu tin nhắn
-    if (status === "success" || (status === "error" && isCurrentUser)) {
-      queryClient.setQueryData([`msg-${message.chatId}`], (old: any) => {
+    // console.log("res", response);
+    if (status === "success" && (msgRes as Message).senderId === user.id) {
+      queryClient.setQueryData([`msg-${msgRes.chatId}`], (old: any) => {
         if (!old) return old;
 
         return {
           ...old,
           pages: old.pages.map((page: any) => {
-            let updatedData = page.data;
+            return {
+              ...page,
+              data: page.data.map((item: Message) => {
+                if (item.id !== tempMsgIdRef.current) {
+                  const { sendStatus, ...rest } = item;
+                  return {
+                    ...rest,
+                  };
+                }
 
-            if (status === "success") {
-              if (isSender) {
-                // Cập nhật trạng thái gửi cho tin nhắn của người dùng hiện tại
-                updatedData = updatedData.map((item: Message) =>
-                  item.id === tempMsgIdRef.current
-                    ? { ...item, sendStatus: SendStatus.SENT }
-                    : normalizeMessage(item)
-                );
-              } else {
-                // Thêm tin nhắn mới và chuẩn hóa tất cả
-                updatedData = [
-                  normalizeMessage(message),
-                  ...updatedData.map(normalizeMessage),
-                ];
-              }
-            } else if (status === "error" && isCurrentUser) {
-              // Đánh dấu tin nhắn gửi thất bại
-              updatedData = updatedData.map((item: Message) =>
-                item.id === tempMsgIdRef.current
-                  ? { ...item, sendStatus: SendStatus.FAILED }
-                  : item
-              );
-            }
-
-            return { ...page, data: updatedData };
+                return {
+                  ...item,
+                  sendStatus: SendStatus.SENT,
+                };
+              }),
+            };
           }),
         };
       });
-    }
+    } else if (
+      status === "success" &&
+      (msgRes as Message).senderId !== user.id
+    ) {
+      queryClient.setQueryData([`msg-${msgRes.chatId}`], (old: any) => {
+        if (!old) return old;
 
-    // Cập nhật danh sách hội thoại cho tin nhắn nhận được
-    if (status === "success" && !isSender) {
+        const firstPageIndex = 0;
+
+        // Tránh thêm trùng tin nhắn (so theo id)
+        const alreadyExists = old.pages.some((page: any) =>
+          page.data.some((item: Message) => item.id === (msgRes as Message).id)
+        );
+        if (alreadyExists) return old;
+
+        return {
+          ...old,
+          pages: old.pages.map((page: any, index: number) => {
+            const cleanData = page.data.map((item: Message) => {
+              const { sendStatus, ...rest } = item;
+              return rest;
+            });
+
+            if (index === firstPageIndex) {
+              // ✅ Thêm msgRes (đã clean) vào đầu page đầu
+              const { sendStatus, ...cleanMsgRes } = msgRes as Message;
+              return {
+                ...page,
+                data: [cleanMsgRes, ...cleanData],
+              };
+            }
+
+            // Các page còn lại: chỉ clean sendStatus
+            return {
+              ...page,
+              data: cleanData,
+            };
+          }),
+        };
+      });
+
       queryClient.setQueryData(["conversations"], (old: any) => {
         if (!old) return old;
 
         return {
           ...old,
           pages: old.pages.map((page: any) => {
-            const data = [...page.data];
-            const itemIndex = data.findIndex(
-              (item: ChatItem) => item.id === message.chatId
+            // Tìm index của item cần cập nhật
+            const itemIndex = page.data.findIndex(
+              (item: ChatItem) => item.id === msgRes.chatId
             );
 
             if (itemIndex === -1) {
-              // Thêm hội thoại mới
               const newChat: ChatItem = {
-                ...(message.chat as ChatItem),
+                ...((msgRes as Message).chat as ChatItem),
                 isRead: false,
-                lastMessage: message,
+                lastMessage: msgRes as Message,
               };
-              return { ...page, data: [newChat, ...data] };
+
+              return { ...page, data: [newChat, ...page.data] };
             }
 
-            // Cập nhật hội thoại hiện có
+            // Tạo bản sao của data để không mutate trực tiếp
+            const newData = [...page.data];
+
+            // Cập nhật item
             const updatedItem: ChatItem = {
-              ...data[itemIndex],
-              lastMessage: message,
-              updatedAt: data[itemIndex]?.updatedAt || new Date().toISOString(),
-              createdAt: data[itemIndex].createdAt,
+              ...newData[itemIndex],
+              lastMessage: msgRes as Message,
+              updatedAt:
+                newData[itemIndex]?.updatedAt || new Date().toISOString(),
+              createdAt: newData[itemIndex].createdAt,
               isRead: false,
             };
+            // Gán item đã cập nhật
+            newData[itemIndex] = updatedItem;
 
-            // Di chuyển lên đầu danh sách
-            data.splice(itemIndex, 1);
-            data.unshift(updatedItem);
+            // Di chuyển item lên đầu mảng
+            const [movedItem] = newData.splice(itemIndex, 1);
+            newData.unshift(movedItem);
 
-            return { ...page, data };
+            return {
+              ...page,
+              data: newData,
+            };
           }),
         };
       });
+    } else if (status === "error" && userId === user.id) {
+      queryClient.setQueryData(
+        [`msg-${(msgRes as Message).chatId}`],
+        (old: any) => {
+          if (!old) return old;
+
+          return {
+            ...old,
+            pages: old.pages.map((page: any) => {
+              return {
+                ...page,
+                data: page.data.map((item: Message) => {
+                  if (item.id === tempMsgIdRef.current) {
+                    return {
+                      ...item,
+                      sendStatus: SendStatus.FAILED,
+                    };
+                  }
+                  return item;
+                }),
+              };
+            }),
+          };
+        }
+      );
     }
   });
 
+  // useSocketEvent("receive-message", (response: ResponseMsg) => {
+  //   const { status, data: msgRes, userId } = response;
+
+  //   // Chỉ xử lý các trạng thái 'success' hoặc 'error'
+  //   if (status !== "success" && status !== "error") return;
+
+  //   const message = msgRes as Message;
+  //   const isCurrentUser = userId === user.id;
+  //   const isSender = message.senderId === user.id;
+
+  //   // Hàm helper để chuẩn hóa tin nhắn (loại bỏ sendStatus)
+  //   const normalizeMessage = (msg: Message) => {
+  //     const { sendStatus, ...rest } = msg;
+  //     return rest;
+  //   };
+
+  //   // Cập nhật dữ liệu tin nhắn
+  //   if (status === "success" || (status === "error" && isCurrentUser)) {
+  //     queryClient.setQueryData([`msg-${message.chatId}`], (old: any) => {
+  //       if (!old) return old;
+
+  //       return {
+  //         ...old,
+  //         pages: old.pages.map((page: any) => {
+  //           let updatedData = page.data;
+
+  //           if (status === "success") {
+  //             if (isSender) {
+  //               // Cập nhật trạng thái gửi cho tin nhắn của người dùng hiện tại
+  //               updatedData = updatedData.map((item: Message) =>
+  //                 item.id === tempMsgIdRef.current
+  //                   ? { ...item, sendStatus: SendStatus.SENT }
+  //                   : normalizeMessage(item)
+  //               );
+  //             } else {
+  //               // Thêm tin nhắn mới và chuẩn hóa tất cả
+  //               updatedData = [
+  //                 normalizeMessage(message),
+  //                 ...updatedData.map(normalizeMessage),
+  //               ];
+  //             }
+  //           } else if (status === "error" && isCurrentUser) {
+  //             // Đánh dấu tin nhắn gửi thất bại
+  //             updatedData = updatedData.map((item: Message) =>
+  //               item.id === tempMsgIdRef.current
+  //                 ? { ...item, sendStatus: SendStatus.FAILED }
+  //                 : item
+  //             );
+  //           }
+
+  //           return { ...page, data: updatedData };
+  //         }),
+  //       };
+  //     });
+  //   }
+
+  //   // Cập nhật danh sách hội thoại cho tin nhắn nhận được
+  //   if (status === "success" && !isSender) {
+  //     queryClient.setQueryData(["conversations"], (old: any) => {
+  //       if (!old) return old;
+
+  //       return {
+  //         ...old,
+  //         pages: old.pages.map((page: any) => {
+  //           const data = [...page.data];
+  //           const itemIndex = data.findIndex(
+  //             (item: ChatItem) => item.id === message.chatId
+  //           );
+
+  //           if (itemIndex === -1) {
+  //             // Thêm hội thoại mới
+  //             const newChat: ChatItem = {
+  //               ...(message.chat as ChatItem),
+  //               isRead: false,
+  //               lastMessage: message,
+  //             };
+  //             return { ...page, data: [newChat, ...data] };
+  //           }
+
+  //           // Cập nhật hội thoại hiện có
+  //           const updatedItem: ChatItem = {
+  //             ...data[itemIndex],
+  //             lastMessage: message,
+  //             updatedAt: data[itemIndex]?.updatedAt || new Date().toISOString(),
+  //             createdAt: data[itemIndex].createdAt,
+  //             isRead: false,
+  //           };
+
+  //           // Di chuyển lên đầu danh sách
+  //           data.splice(itemIndex, 1);
+  //           data.unshift(updatedItem);
+
+  //           return { ...page, data };
+  //         }),
+  //       };
+  //     });
+  //   }
+  // });
+
   useSocketEvent("created-group", (response: ResponseCreateGroup) => {
     const { status, data: chat, sender } = response;
-    console.log("response", response);
+    // console.log("created-group", response);
     if (status === "success") {
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
       // queryClient.setQueryData(["conversations"], (old: any) => {
@@ -326,8 +344,7 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
       //     ],
       //   };
       // });
-
-      router.replace(`/workspace/t/${chat.id}`);
+      if (sender.id === user.id) router.replace(`/workspace/t/${chat.id}`);
     }
   });
 
@@ -494,8 +511,6 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
       emit("create-group", {
         ...newChat,
       });
-
-      console.log("end");
     },
     [
       user,

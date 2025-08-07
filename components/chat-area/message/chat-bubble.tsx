@@ -45,7 +45,14 @@ export default function ChatBubble(props: ChatBubbleProps) {
         overflow: "hidden",
       }}
     >
-      <Stack sx={{ position: "relative" }} direction="column" alignItems="end">
+      <Stack
+        sx={{
+          position: "relative",
+          alignItems: isMe ? "flex-end" : "flex-start",
+        }}
+        direction="column"
+        alignItems="end"
+      >
         <Sheet sx={sheetStyles}>
           <Typography
             sx={[
@@ -54,7 +61,7 @@ export default function ChatBubble(props: ChatBubbleProps) {
                 fontSize: "15px",
                 color: isMe
                   ? theme.palette.common.white
-                  : theme.palette.common.black,
+                  : theme.palette.secondary[100],
               },
             ]}
           >

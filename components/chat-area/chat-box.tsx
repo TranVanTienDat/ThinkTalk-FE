@@ -16,6 +16,7 @@ import { memo, ReactNode } from "react";
 import { useStore } from "zustand";
 import { InputBox } from "./input-box";
 import MessagesPane from "./message/message-pane";
+import { useAppContext } from "@/context/app-context";
 
 export const ChatBox = ({ params }: { params: Params }) => {
   const { isFetchingNextPage: isNextPage, fetchStatus } = useMessages({
@@ -51,10 +52,14 @@ export const ChatBox = ({ params }: { params: Params }) => {
 };
 
 const AvatarHeader = ({ params }: { params: Params }) => {
+  const { user } = useAppContext();
   const theme = useTheme();
   const { userNewGroup } = useMessageHandler();
   const userInfo = useStore(useConversationInfoStore, (state) => state.data);
   const chatInfo = userInfo[params.id];
+  const getMyFriend = () => {
+    return chatInfo.chatMembers.find((m) => m.user.id !== user.id)?.user;
+  };
   const showAvatar = userNewGroup.slice(0.3);
   return (
     <>
@@ -62,7 +67,11 @@ const AvatarHeader = ({ params }: { params: Params }) => {
         <CommonLayout>
           <Avatar
             alt={""}
-            src={chatInfo.avatar}
+            src={
+              chatInfo.type === "group"
+                ? chatInfo.avatar
+                : getMyFriend?.()?.avatar
+            }
             size="lg"
             sx={{ width: "80px", height: "80px" }}
           />
@@ -70,9 +79,19 @@ const AvatarHeader = ({ params }: { params: Params }) => {
           <Typography
             level="h4"
             lineHeight={1}
-            sx={{ fontWeight: 700, color: theme.palette.primary[700] }}
+            sx={{
+              fontWeight: 700,
+              color: theme.palette.primary[700],
+              maxWidth: {
+                xs: "140px",
+                sm: "400px",
+              },
+            }}
+            className=" truncate"
           >
-            {chatInfo.name}
+            {chatInfo.type === "group"
+              ? chatInfo.name
+              : getMyFriend?.()?.fullName}
           </Typography>
         </CommonLayout>
       )}

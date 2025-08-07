@@ -25,7 +25,6 @@ const RenderByTypeText = ({ msg, isMe }: { msg: Message; isMe: boolean }) => {
   return (
     <>
       <Stack
-        direction="row"
         alignItems="flex-end"
         spacing={1}
         sx={{ flexDirection: isMe ? "row-reverse" : "row", gap: "6px" }}
@@ -41,7 +40,13 @@ const RenderByTypeText = ({ msg, isMe }: { msg: Message; isMe: boolean }) => {
           )}
         </>
 
-        <Box>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: isMe ? "flex-end" : "flex-start",
+          }}
+        >
           {isShowName && (
             <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
               {msg?.user?.nickname || msg?.user?.fullName}

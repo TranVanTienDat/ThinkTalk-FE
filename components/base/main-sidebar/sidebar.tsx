@@ -1,19 +1,24 @@
 "use client";
 
 import { tabItems } from "@/constants";
-import { IconButton, Tab, TabList } from "@mui/joy";
-import { Settings } from "lucide-react";
+import { Box, Tab, TabList, useTheme } from "@mui/joy";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import SettingDrawer from "./setting-drawer";
 
 const MenuAccount = dynamic(() => import("./menu-account"), { ssr: false });
 
 export default function Sidebar() {
+  const theme = useTheme();
+
   return (
-    <div
-      className="w-14 px-2.5 py-4 bg-white flex flex-col justify-between items-center  rounded-l-md
+    <Box
+      className="w-14 px-2.5 py-4  flex flex-col justify-between items-center  rounded-l-md
     border-r border-gray-200
     "
+      sx={{
+        backgroundColor: theme.palette.background,
+      }}
     >
       <TabList
         disableUnderline
@@ -51,12 +56,10 @@ export default function Sidebar() {
       </TabList>
 
       <div>
-        <IconButton variant="outlined">
-          <Settings size={20} />
-        </IconButton>
+        <SettingDrawer />
 
         <MenuAccount />
       </div>
-    </div>
+    </Box>
   );
 }

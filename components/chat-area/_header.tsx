@@ -3,6 +3,7 @@ import NewConversation from "@/app/workspace/t/[id]/_components/new-conversation
 import useDocumentTitle from "@/hooks/use-document-title";
 import { useConversationInfoStore } from "@/stores/conversation-info-store";
 import { Params } from "@/types";
+import { DarkMode } from "@/types/device-system";
 import {
   Avatar,
   Badge,
@@ -10,6 +11,7 @@ import {
   Sheet,
   Stack,
   Typography,
+  useColorScheme,
   useTheme,
 } from "@mui/joy";
 import { EllipsisVertical, Phone, Video } from "lucide-react";
@@ -44,15 +46,18 @@ export const AvatarCustomize = ({
 
 export const Header = ({ params }: { params: Params }) => {
   const theme = useTheme();
+  const { mode } = useColorScheme();
   const data = useStore(useConversationInfoStore, (state) => state.data);
   const user = data[params.id];
   useDocumentTitle(user?.name ? user.name : "");
   return (
     <Sheet
       sx={{
-        boxShadow: "rgba(33, 35, 38, 0.1) 0px 10px 10px -10px",
+        boxShadow:
+          mode === DarkMode.LIGHT
+            ? "rgba(33, 35, 38, 0.1) 0px 10px 10px -10px"
+            : "rgba(255, 255, 255, 0.05) 0px 10px 10px -10px",
         padding: "10px 16px",
-        // backgroundColor:
         //   bgImgConfig["025c84a0-b438-4c8a-b8e9-8a52a025a7b9"].color,
       }}
     >
@@ -75,7 +80,14 @@ export const Header = ({ params }: { params: Params }) => {
               <Typography
                 level="body-md"
                 lineHeight={1}
-                sx={{ fontWeight: 700 }}
+                sx={{
+                  fontWeight: 700,
+                  maxWidth: {
+                    xs: "140px", // mobile (xs breakpoint)
+                    sm: "300px", // >=600px (sm and up)
+                  },
+                }}
+                className=" truncate"
               >
                 {user?.name || ""}
               </Typography>

@@ -1,5 +1,5 @@
 import { CssVarsThemeOptions, extendTheme, PaletteRange } from "@mui/joy";
-import { colors } from "./colors";
+import { colors, darkColors } from "./colors";
 
 declare module "@mui/joy/styles" {
   interface Palette {
@@ -46,6 +46,14 @@ const generateThemeOptions = (): CssVarsThemeOptions => {
           secondary: colors.secondary,
           custom: colors.custom,
           icon: colors.icon,
+        },
+      },
+      dark: {
+        palette: {
+          primary: darkColors.primary,
+          secondary: darkColors.secondary,
+          custom: darkColors.custom,
+          icon: darkColors.icon,
         },
       },
     },
@@ -154,7 +162,6 @@ const generateThemeOptions = (): CssVarsThemeOptions => {
       JoySheet: {
         styleOverrides: {
           root: {
-            backgroundColor: "white",
             border: "none",
             borderWidth: 0,
           },

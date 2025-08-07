@@ -51,7 +51,9 @@ export default function MessagesPane({
       fetchNextPage?.();
     }
   }, [inView, fetchNextPage, hasNextPage]);
-  console.log("data", data);
+
+  // console.log("dt", data);
+
   const sortMessageMemo = useMemo(() => {
     const dataFlat = data?.pages.flatMap((page) => page.data) || [];
     const latestReadByUser = new Map<string, string>();
@@ -64,6 +66,8 @@ export default function MessagesPane({
       });
     });
 
+    // console.log("dataFlat", dataFlat);
+
     const dataMerges = dataFlat.map((msg: Message) => ({
       ...msg,
       messageRead: (msgRead[msg.id] || []).filter(
@@ -72,9 +76,12 @@ export default function MessagesPane({
       read: msg.messageRead.some((item) => item?.user?.id === userCurrent.id),
     }));
 
+    // console.log("dataMerges", dataMerges);
+
     const sortedMessages = dataMerges.sort((a, b) =>
       sortDateHandler(a.createdAt, b.createdAt)
     );
+
     return groupMessages(sortedMessages);
   }, [data, msgRead, userCurrent]);
 
@@ -92,7 +99,7 @@ export default function MessagesPane({
   const isMe = (msg: Message) => {
     return msg?.user?.id === userCurrent.id;
   };
-  // console.log("sortMessageMemo", sortMessageMemo);
+
   return (
     <Sheet sx={sheetStyles}>
       {!hasNextPage && <AvatarHeader params={params} />}
@@ -105,17 +112,13 @@ export default function MessagesPane({
           },
         ]}
       >
-        {hasNextPage && (
-          <div ref={ref} className="mb-3">
-            <Loading type="area" />
-          </div>
-        )}
+        {hasNextPage ||
+          (isLoading && (
+            <div ref={ref} className="mb-3">
+              <Loading type="area" />
+            </div>
+          ))}
 
-        {isLoading && (
-          <Box>
-            <Loading type="area" />
-          </Box>
-        )}
         {/* <Stack spacing={2} sx={{ justifyContent: "flex-end" }}> */}
         {sortMessageMemo.map((msg) => {
           // const msg = sortMessageMemo[virtualRow.index];

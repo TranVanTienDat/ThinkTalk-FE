@@ -3,6 +3,7 @@ import { TanstackQueryIniter } from "@/context/query-client";
 import type { Metadata } from "next";
 import "./globals.css";
 import ThemeRegistry from "./ThemeRegistry";
+import InitColorSchemeScript from "@mui/joy/InitColorSchemeScript";
 
 export const metadata: Metadata = {
   title: "ThinkTalk",
@@ -18,8 +19,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning={true}>
       <body className="h-screen">
+        <InitColorSchemeScript />
         <TanstackQueryIniter>
           <ThemeRegistry options={{ key: "joy" }}>
             {children}

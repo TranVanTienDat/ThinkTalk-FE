@@ -1,15 +1,8 @@
-import { MsgUserStatus } from "@/types";
+import { ChatItem } from "@/types";
 import { createIndexDBStore } from "./store";
 
-export type ConversationInfoType = {
-  id: string;
-  name: string;
-  avatar?: string;
-  members?: MsgUserStatus[];
-  createdAt: string;
-  updatedAt: string;
+export type ConversationInfoType = ChatItem & {
   lastUpdated: string;
-  isRead?: boolean;
 };
 
 const initialData: Record<string, ConversationInfoType> = {};

@@ -1,7 +1,9 @@
+import { useAppContext } from "@/context/app-context";
+import { useMessageHandler } from "@/context/message-handler-context";
 import { useConversations } from "@/hooks/use-conversations";
 import { useConversationInfoStore } from "@/stores/conversation-info-store";
 import useConversationTemp from "@/stores/conversationTemp";
-import { ChatItem, Message } from "@/types";
+import { ChatItem, ChatItemType, Member, Message } from "@/types";
 import { getDurationDate, hasPassedTwoDays } from "@/utils";
 import {
   Avatar,
@@ -22,7 +24,6 @@ import { IconButtonCustomize } from "../base/button-loading";
 import Loading from "../base/Loading";
 import ConversationMenu from "./_menu";
 import { ConversationLoading } from "./skeleton-loading";
-import { useMessageHandler } from "@/context/message-handler-context";
 
 export const BoxStyled = styled(Box)(({ theme }) => ({
   padding: "8px",
@@ -125,6 +126,8 @@ const ConversationItem = ({
   id,
   lastMsg,
   isActive,
+  type,
+  members,
 }: {
   name: string;
   isRead?: boolean;
@@ -132,7 +135,10 @@ const ConversationItem = ({
   id: string;
   lastMsg: Message;
   isActive: boolean;
+  type: ChatItemType;
+  members: Member[];
 }) => {
+  const { user } = useAppContext();
   const theme = useTheme();
   const [open, setOpen] = useState(false);
   const onOpenChange = useCallback(
@@ -146,6 +152,9 @@ const ConversationItem = ({
     return <ConversationMenu props={{ id, open, onOpenChange }} />;
   }, [onOpenChange, open, id]);
 
+  const getMyFriend = () => {
+    return members.find((m) => m.user.id !== user.id)?.user;
+  };
   return (
     <BoxStyled
       sx={[
@@ -166,12 +175,17 @@ const ConversationItem = ({
     >
       <Avatar
         alt={name}
-        src={avatar ?? ""}
+        src={type === "group" ? avatar : getMyFriend()?.avatar}
         sx={{
           backgroundColor: theme.palette.custom.softBlue,
         }}
       />
-      <Content id={id} name={name} isRead={isRead} lastMsg={lastMsg} />
+      <Content
+        id={id}
+        name={type === "group" ? name : getMyFriend()?.fullName ?? ""}
+        isRead={isRead}
+        lastMsg={lastMsg}
+      />
       <Badge
         anchorOrigin={{ vertical: "top", horizontal: "left" }}
         invisible={isRead}
@@ -272,6 +286,8 @@ const RenderConversation = ({
           avatar={co?.avatar}
           lastMsg={co.lastMessage}
           isActive={(id as string) === co.id}
+          type={co.type}
+          members={co.chatMembers}
         />
       ))}
       {isLoading && <ConversationLoading />}

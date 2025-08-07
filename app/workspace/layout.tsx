@@ -23,7 +23,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <MessageHandlerProvider>
             <BoxStyled>
               <MainSidebar />
-              <div className="bg-white flex-1 h-full rounded-[14px]  overflow-hidden">
+              <div className=" flex-1 h-full rounded-[14px]  overflow-hidden">
                 {children}
               </div>
             </BoxStyled>

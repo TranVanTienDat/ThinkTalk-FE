@@ -1,10 +1,5 @@
-import {
-  GroupPosition,
-  Message,
-  MessageType,
-  SendStatus,
-  UserDetail,
-} from "@/types";
+import { UserType } from "@/stores/user-store";
+import { GroupPosition, Message, MessageType, SendStatus } from "@/types";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
@@ -18,11 +13,10 @@ export const mappingNotificationType = {
   system: "Thông báo Hệ Thống",
 };
 
-export const getDurationDate = (dateString: string) => {
-  // Parse input as UTC
-  const inputDate = dayjs.utc(dateString);
-  // Current time in UTC
-  const now = dayjs().utc();
+export const getDurationDate = (dateInput: string | Date) => {
+  // Convert input to dayjs object, assume UTC
+  const inputDate = dayjs.utc(dateInput).tz("Asia/Ho_Chi_Minh");
+  const now = dayjs().tz("Asia/Ho_Chi_Minh");
 
   if (inputDate.isAfter(now)) {
     return "0 phút trước";
@@ -36,7 +30,7 @@ export const getDurationDate = (dateString: string) => {
   if (diffHours < 24) return `${diffHours} giờ trước`;
   if (diffDays <= 3) return `${diffDays} ngày trước`;
 
-  return inputDate.local().format("DD/MM/YYYY HH:mm");
+  return inputDate.format("DD/MM/YYYY HH:mm");
 };
 
 export const emojiWithCode = (e: string) => {
@@ -115,7 +109,7 @@ type CreateMessageInput = {
   chatId: string;
   content: string;
   type: MessageType;
-  user: Omit<UserDetail, "accessToken" | "refreshToken">;
+  user: UserType;
   msgId: string;
 };
 
