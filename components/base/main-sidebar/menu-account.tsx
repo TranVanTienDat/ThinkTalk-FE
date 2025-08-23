@@ -1,5 +1,6 @@
 "use client";
 
+import AccountSettingsAndSecurityModal from "@/components/account/setting-security-modal";
 import { menuAccount } from "@/constants";
 import { useAppContext } from "@/context/app-context";
 import { useLogout } from "@/hooks/use-logout";
@@ -18,7 +19,13 @@ import {
   useTheme,
 } from "@mui/joy";
 import { DeviceUUID } from "device-uuid";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import Loading from "../Loading";
 
 export default function MenuAccount() {
@@ -26,6 +33,7 @@ export default function MenuAccount() {
   const theme = useTheme();
   const { isPending, mutateAsync } = useLogout();
   const { contextHolder, openNotification } = useNotification();
+  const [open, setOpen] = useState(false);
   const [key, setKey] = useState("");
   const deviceInfoRef = useRef({});
   useEffect(() => {
@@ -52,10 +60,18 @@ export default function MenuAccount() {
     }
   }, []);
 
+  const handleOpenChange = useCallback(
+    (event: SyntheticEvent | null, isOpen: boolean) => {
+      if (key === "setting" && !isOpen) return;
+      setOpen(isOpen);
+    },
+    [key]
+  );
+
   return (
     <>
       {contextHolder}
-      <Dropdown>
+      <Dropdown open={open} onOpenChange={handleOpenChange}>
         <MenuButton
           slots={{ root: Avatar }}
           sx={{
@@ -85,6 +101,13 @@ export default function MenuAccount() {
           <ListDivider />
           {menuAccount.map((item) => {
             const Icon = item.icon;
+            const { key: itemKey, ...rest } = item;
+            if (item.key === "setting")
+              return (
+                <div key={itemKey} onClick={() => setKey(item.key)}>
+                  <AccountSettingsAndSecurityModal setKey={setKey} {...rest} />
+                </div>
+              );
             return (
               <MenuItem
                 key={item.label}

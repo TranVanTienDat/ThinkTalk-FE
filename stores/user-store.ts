@@ -2,8 +2,8 @@ import { create } from "zustand";
 
 export type UserType = {
   id: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   email: string;
   fullName: string;
   nickname: string;

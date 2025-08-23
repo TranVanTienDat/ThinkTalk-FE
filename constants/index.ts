@@ -1,11 +1,18 @@
 import { emojiWithCode } from "@/utils";
 import {
+  ArchiveRestore,
+  ArrowRightFromLine,
   Bell,
   CircleUser,
   Handshake,
+  Link,
   LogOut,
   MessageCircle,
+  Phone,
+  Pin,
+  Trash2,
   UserCog,
+  Video,
 } from "lucide-react";
 
 export const tabItems = [
@@ -19,6 +26,31 @@ export const menuAccount = [
   { icon: UserCog, size: 18, label: "Cài đặt và bảo mật", key: "setting" },
   { icon: CircleUser, size: 18, label: "Tài khoản", key: "account" },
   { icon: Handshake, size: 18, label: "Đóng góp ý kiến", key: "contribute" },
+];
+
+export const menuConversation = [
+  { icon: Pin, size: 18, label: "Ghim tin nhắn", key: "pin" },
+  {
+    icon: ArchiveRestore,
+    size: 18,
+    label: "Lưu trữ cuộc trò chuyện",
+    key: "restore",
+  },
+  { icon: Phone, size: 18, label: "Gọi thoại", key: "phonee" },
+  { icon: Video, size: 18, label: "Gọi video", key: "phoneVideo" },
+  {
+    icon: Trash2,
+    size: 18,
+    label: "Xóa cuộc trò chuyện",
+    key: "trash",
+  },
+  {
+    icon: Link,
+    size: 18,
+    label: "Link tham gia nhóm",
+    key: "invitation",
+  },
+  { icon: ArrowRightFromLine, size: 18, label: "Rời khỏi nhóm", key: "leave" },
 ];
 
 const emojiFace = [

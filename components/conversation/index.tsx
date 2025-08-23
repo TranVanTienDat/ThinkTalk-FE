@@ -140,17 +140,21 @@ const ConversationItem = ({
 }) => {
   const { user } = useAppContext();
   const theme = useTheme();
+  const [key, setKey] = useState("");
   const [open, setOpen] = useState(false);
   const onOpenChange = useCallback(
     (event: React.SyntheticEvent | null, isOpen: boolean) => {
+      if (key === "invitation" && !isOpen) return;
       setOpen(isOpen);
     },
-    []
+    [key]
   );
 
   const menuMemo = useMemo(() => {
-    return <ConversationMenu props={{ id, open, onOpenChange }} />;
-  }, [onOpenChange, open, id]);
+    return (
+      <ConversationMenu props={{ id, type, open, onOpenChange, key, setKey }} />
+    );
+  }, [onOpenChange, open, id, type, key, setKey]);
 
   const getMyFriend = () => {
     return members.find((m) => m.user.id !== user.id)?.user;

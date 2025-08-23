@@ -36,8 +36,8 @@ export enum SendStatus {
 
 export type UserDetail = {
   id: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   email: string;
   fullName: string;
   nickname: string;
