@@ -62,7 +62,22 @@ const config: Config = {
     //     md: "calc(var(--radius) - 2px)",
     //     sm: "calc(var(--radius) - 4px)",
     //   },
-    // },
+    extend: {
+      keyframes: {
+        fadeIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        slideInUp: {
+          "0%": { transform: "translateY(100%)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
+      },
+      animation: {
+        fadeIn: "fadeIn 1.5s ease-in-out",
+        slideInUp: "slideInUp 1s ease-in-out",
+      },
+    },
   },
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   plugins: [require("tailwindcss-animate")],

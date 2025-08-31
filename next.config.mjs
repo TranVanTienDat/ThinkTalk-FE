@@ -2,11 +2,11 @@
 const nextConfig = {
   async redirects() {
     return [
-      {
-        source: "/",
-        destination: "/workspace",
-        permanent: false,
-      },
+      // {
+      //   source: "/",
+      //   destination: "/workspace",
+      //   permanent: false,
+      // },
     ];
   },
   reactStrictMode: false,

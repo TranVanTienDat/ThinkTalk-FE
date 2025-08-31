@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { AuthWrap } from "../_components/auth-wrap";
+import { GoogleIcon } from "../_components/google-icon";
 import { InputWithLabel } from "../_components/input-with-label";
 const formSchema = z.object({
   // fullname: z.string().min(2, {
@@ -124,6 +125,34 @@ export default function Page() {
         <Link className="text-[#615EF0] text-sm ml-2" href={"/register"}>
           đăng kí ngay
         </Link>
+      </div>
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+          <div className="w-full border-t border-gray-300" />
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-2 bg-white text-gray-500">
+            Hoặc tiếp tục với
+          </span>
+        </div>
+      </div>
+
+      <div>
+        <Button
+          variant="outlined"
+          fullWidth
+          startDecorator={<GoogleIcon />}
+          sx={{
+            color: "black",
+            borderColor: "#E0E0E0",
+            "&:hover": {
+              borderColor: "#BDBDBD",
+              backgroundColor: "#F5F5F5",
+            },
+          }}
+        >
+          Đăng nhập bằng Google
+        </Button>
       </div>
     </AuthWrap>
   );
