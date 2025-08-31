@@ -115,7 +115,7 @@ export default function Home() {
             Ready to Join?
           </h2>
           <p className="max-w-[600px] mx-auto mt-4 text-gray-500 md:text-xl/relaxed dark:text-gray-400">
-            Sign up now and start your journey with ThinkTalk. It's free!
+            Sign up now and start your journey with ThinkTalk. It is free!
           </p>
           <div className="mt-8">
             <Link

@@ -22,8 +22,8 @@ export type AppContextValue = {
 const AppContext = createContext<AppContextValue>({
   user: {
     id: uuidv4(),
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     email: "",
     fullName: "",
     nickname: "",
