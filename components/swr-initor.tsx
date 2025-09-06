@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
@@ -10,14 +11,12 @@ type SwrInitorProps = {
 };
 const SwrInitor = ({ children }: SwrInitorProps) => {
   const router = useRouter();
-
+ const session = useSession()
   useEffect(() => {
-    const consoleTokenFromLocalStorage = localStorage?.getItem("access_token");
-    const refreshTokenFromLocalStorage = localStorage?.getItem("refresh_token");
-
+     if (typeof window === "undefined") return;
     (async () => {
       try {
-        if (!(consoleTokenFromLocalStorage || refreshTokenFromLocalStorage)) {
+        if (!session) {
           router.replace("/login");
           return;
         }
@@ -26,7 +25,7 @@ const SwrInitor = ({ children }: SwrInitorProps) => {
         router.replace("/login");
       }
     })();
-  }, [router]);
+  }, [router,session]);
 
   return (
     <SWRConfig

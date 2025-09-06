@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import ThemeRegistry from "./ThemeRegistry";
 import InitColorSchemeScript from "@mui/joy/InitColorSchemeScript";
+import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   title: "ThinkTalk",
@@ -22,12 +23,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning={true}>
       <body className="h-screen">
         <InitColorSchemeScript />
+        <SessionProvider>
         <TanstackQueryIniter>
           <ThemeRegistry options={{ key: "joy" }}>
             {children}
             <Toaster />
           </ThemeRegistry>
         </TanstackQueryIniter>
+        </SessionProvider>
       </body>
     </html>
   );

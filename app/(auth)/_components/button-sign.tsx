@@ -1,10 +1,10 @@
 import { Button } from "@mui/joy";
 import { GoogleIcon } from "./google-icon";
-import { signIn } from "@/auth";
+import { signIn } from "next-auth/react"
 
 export default function ButtonSign() {
   const handleSign = async () => {
-    await signIn("google");
+  await signIn("google", {redirectTo: '/workspace'});
   };
 
     return   <Button

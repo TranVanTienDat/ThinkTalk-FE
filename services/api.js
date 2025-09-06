@@ -1,14 +1,20 @@
 import axios from "axios";
+import { getSession } from "next-auth/react";
+
+export const isClient = () => typeof window !== "undefined";
+
 const axiosInstance = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/v1`,
   headers: { "Content-Type": "application/json" },
 });
 
 axiosInstance.interceptors.request.use(
-  (config) => {
-    const token =
-      localStorage.getItem("access_token") ||
-      localStorage.getItem("refresh_token");
+  async (config) => {
+    let token = "";
+    if (isClient()) {
+      const session = await getSession();
+      token = session?.user?.accessToken;
+    }
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -23,13 +29,11 @@ axiosInstance.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {
-    console.log("API Error:", error);
+  async (error) => {
     if (error.response.status === 401) {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
-      router.push("/login");
-      return;
+      // await signOut({ callbackUrl: "/login" });
+      // router.push("/login");
+      // return;
     }
     throw error;
   }

@@ -1,16 +1,14 @@
 "use client";
-import auth from "@/apiRequest/auth";
 import { Form } from "@/components/ui/form";
 import useDocumentTitle from "@/hooks/use-document-title";
 import { useNotification } from "@/hooks/use-notification";
-import useUserDetailStore, { UserType } from "@/stores/user-store";
 import { DeviceType } from "@/types";
 import { getDevice } from "@/utils/getDevice";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@mui/joy";
+import { signIn } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -29,7 +27,6 @@ const formSchema = z.object({
 
 export default function Page() {
   useDocumentTitle("Đăng nhập");
-  const saveUser = useUserDetailStore((state) => state.saveUser);
   const { contextHolder, openNotification } = useNotification();
   const [device, setDevice] = useState<DeviceType | null>(null);
   const [loading, setLoading] = useState(false);
@@ -53,7 +50,6 @@ export default function Page() {
     }
   }, []);
 
-  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -67,19 +63,15 @@ export default function Page() {
     try {
       const { email, password } = values;
       setLoading(true);
-      const response = await auth.login({
+      await signIn("credentials", {
         email,
         password,
         type: device.type,
         device_token: device.device_token,
-        info: device.info,
+        info: JSON.stringify(device.info),
+        redirectTo: "/workspace",
+        redirect: true,
       });
-
-      if (response) {
-        localStorage.setItem("access_token", response.accessToken);
-        saveUser(response as UserType);
-        router.push("/workspace");
-      }
     } catch (error: any) {
       openNotification({
         title: "Đăng nhập thất bại",
@@ -93,7 +85,8 @@ export default function Page() {
     <AuthWrap>
       {contextHolder}
       <div className="pt-4 pb-10">
-        <h1 className="pb-3 font-bold text-3xl flex gap-3">
+        <h1 className="pb-3 font-bold text-3xl flex gap-3"
+        >
           Welcome back{" "}
           <Image src="/images/icon.png" alt="Logo" width={38} height={38} />{" "}
         </h1>
