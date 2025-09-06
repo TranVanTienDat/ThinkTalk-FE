@@ -31,9 +31,9 @@ axiosInstance.interceptors.response.use(
   },
   async (error) => {
     if (error.response.status === 401) {
-      // await signOut({ callbackUrl: "/login" });
-      // router.push("/login");
-      // return;
+      await signOut({ callbackUrl: "/login" });
+      router.push("/login");
+      return;
     }
     throw error;
   }
