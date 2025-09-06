@@ -19,7 +19,7 @@ export default function Home() {
         </div>
         <div className="mt-8 animate-pulse">
           <Link
-            href="/login"
+            href="/workspace"
             className="inline-flex items-center justify-center rounded-md bg-blue-500 px-10 py-3 text-lg font-medium text-gray-50 shadow transition-colors hover:bg-blue-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-700"
           >
             Get Started

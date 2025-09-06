@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { AuthWrap } from "../_components/auth-wrap";
-import { GoogleIcon } from "../_components/google-icon";
+import ButtonSign from "../_components/button-sign";
 import { InputWithLabel } from "../_components/input-with-label";
 const formSchema = z.object({
   // fullname: z.string().min(2, {
@@ -137,23 +137,7 @@ export default function Page() {
         </div>
       </div>
 
-      <div>
-        <Button
-          variant="outlined"
-          fullWidth
-          startDecorator={<GoogleIcon />}
-          sx={{
-            color: "black",
-            borderColor: "#E0E0E0",
-            "&:hover": {
-              borderColor: "#BDBDBD",
-              backgroundColor: "#F5F5F5",
-            },
-          }}
-        >
-          Đăng nhập bằng Google
-        </Button>
-      </div>
+   <ButtonSign />
     </AuthWrap>
   );
 }
