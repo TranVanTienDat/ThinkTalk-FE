@@ -7,13 +7,14 @@ import { getDevice } from "@/utils/getDevice";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@mui/joy";
 import { signIn } from "next-auth/react";
+import Cookies from "js-cookie";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { AuthWrap } from "../_components/auth-wrap";
-import ButtonSign from "../_components/button-sign";
+import { GoogleIcon } from "../_components/google-icon";
 import { InputWithLabel } from "../_components/input-with-label";
 const formSchema = z.object({
   // fullname: z.string().min(2, {
@@ -69,6 +70,7 @@ export default function Page() {
         type: device.type,
         device_token: device.device_token,
         info: JSON.stringify(device.info),
+        typeAuth: "login",
         redirectTo: "/workspace",
         redirect: true,
       });
@@ -81,12 +83,20 @@ export default function Page() {
       setLoading(false);
     }
   }
+
+  const handleSign = async () => {
+    if (!device?.type || !device?.device_token) return;
+    Cookies.set("device", JSON.stringify(device), { expires: 1 });
+    await signIn("google", {
+      redirectTo: "/workspace",
+    });
+  };
+
   return (
     <AuthWrap>
       {contextHolder}
       <div className="pt-4 pb-10">
-        <h1 className="pb-3 font-bold text-3xl flex gap-3"
-        >
+        <h1 className="pb-3 font-bold text-3xl flex gap-3">
           Welcome back{" "}
           <Image src="/images/icon.png" alt="Logo" width={38} height={38} />{" "}
         </h1>
@@ -124,13 +134,26 @@ export default function Page() {
           <div className="w-full border-t border-gray-300" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-gray-500">
-            Hoặc tiếp tục với
-          </span>
+          <span className="px-2 bg-white text-gray-500">Hoặc tiếp tục với</span>
         </div>
       </div>
 
-   <ButtonSign />
+      <Button
+        variant="outlined"
+        fullWidth
+        startDecorator={<GoogleIcon />}
+        sx={{
+          color: "black",
+          borderColor: "#E0E0E0",
+          "&:hover": {
+            borderColor: "#BDBDBD",
+            backgroundColor: "#F5F5F5",
+          },
+        }}
+        onClick={handleSign}
+      >
+        Đăng nhập bằng Google
+      </Button>
     </AuthWrap>
   );
 }

@@ -1,16 +1,14 @@
 "use client";
-import auth from "@/apiRequest/auth";
 import { Form } from "@/components/ui/form";
 import useDocumentTitle from "@/hooks/use-document-title";
 import { useNotification } from "@/hooks/use-notification";
-import useUserDetailStore, { UserType } from "@/stores/user-store";
 import { DeviceType } from "@/types";
 import { getDevice } from "@/utils/getDevice";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@mui/joy";
+import { signIn } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -29,10 +27,7 @@ const formSchema = z.object({
 
 export default function Page() {
   useDocumentTitle("Đăng kí");
-  const saveUser = useUserDetailStore((state) => state.saveUser);
   const { contextHolder, openNotification } = useNotification();
-
-  const router = useRouter();
 
   const [device, setDevice] = useState<DeviceType | null>(null);
   const [loading, setLoading] = useState(false);
@@ -72,19 +67,32 @@ export default function Page() {
     setLoading(true);
     try {
       const { email, password, fullName } = values;
-      const response = await auth.register({
+
+      await signIn("credentials", {
         email,
         password,
         fullName,
         type: device.type,
         device_token: device.device_token,
-        info: device.info,
+        info: JSON.stringify(device.info),
+        typeAuth: "register",
+        redirectTo: "/workspace",
+        redirect: true,
       });
-      if (response) {
-        localStorage.setItem("access_token", response.accessToken);
-        saveUser(response as UserType);
-        router.push("/workspace");
-      }
+
+      // const response = await auth.register({
+      //   email,
+      //   password,
+      //   fullName,
+      //   type: device.type,
+      //   device_token: device.device_token,
+      //   info: device.info,
+      // });
+      // if (response) {
+      //   localStorage.setItem("access_token", response.accessToken);
+      //   saveUser(response as UserType);
+      //   router.push("/workspace");
+      // }
     } catch (error: any) {
       openNotification({
         title: "Đăng kí thất bại",
