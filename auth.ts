@@ -68,6 +68,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
           return user;
         } catch (error) {
+          console.error("err",error)
           throw error;
         }
       },
@@ -101,10 +102,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     signIn: async ({ user, account }) => {
       try {
-        const cookieStore = cookies();
-        const device = JSON.parse(cookieStore.get("device")?.value || "");
+        
 
-        if (account?.provider === "google" && account.id_token && device) {
+        if (account?.provider === "google" && account.id_token) {
+          const cookieStore = cookies();
+          const device = JSON.parse(cookieStore.get("device")?.value || "");
           const res = await authApi.loginWithGoogle({
             ...device,
             token: account.id_token,

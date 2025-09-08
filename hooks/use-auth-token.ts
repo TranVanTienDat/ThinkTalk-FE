@@ -1,12 +1,13 @@
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 export function useAuthToken() {
+  const {data: session} = useSession()
   const [token, setTokenState] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("access_token");
-    if (stored) setTokenState(stored);
+    if(session?.user) setTokenState((session?.user as any).accessToken);
     setIsHydrated(true);
   }, []);
 
