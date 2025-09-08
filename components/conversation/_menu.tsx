@@ -28,6 +28,7 @@ import { AccountSettingsAndSecurityModalProps } from "../account/setting-securit
 import { IconButtonCustomize } from "../base/button-loading";
 import { useCreateInviteLink } from "@/hooks/use-create-invite-link";
 import { useNotification } from "@/hooks/use-notification";
+import { QRCode } from "antd";
 
 type PropsType = {
   id: string;
@@ -199,17 +200,31 @@ const GeneralLinkModal = ({
 }) => {
   const { mutateAsync, data, isPending } = useCreateInviteLink();
   const { contextHolder, openNotification } = useNotification();
-  console.log("data", data);
+
   const handleGeneralLink = async () => {
     try {
       await mutateAsync(chatId);
     } catch (error: any) {
-      console.log("error", error);
       openNotification({
         title: "Tạo link tham gia",
         description: error?.message ?? "Tạo link bị lỗi",
       });
     }
+  };
+
+  const handleCopyLink = () => {
+    if (!data) {
+      openNotification({
+        title: "Copy link",
+        description: "Chưa có link để copy",
+      });
+      return;
+    }
+    navigator.clipboard.writeText(data);
+    openNotification({
+      type: "success",
+      title: "Copy link",
+    });
   };
 
   return (
@@ -222,6 +237,9 @@ const GeneralLinkModal = ({
         gap={2}
         overflow="hidden"
       >
+        {data && (
+          <QRCode errorLevel="H" value={data} icon="/images/icon.png" />
+        )}
         <Stack
           direction="row"
           justifyContent="center"
@@ -229,8 +247,12 @@ const GeneralLinkModal = ({
           gap={1}
           width="100%"
         >
-          {data && <InputStyled disabled value={data} />}
-          <IconButtonCustomize icon={Copy} sizeIcon={16} />
+          <InputStyled disabled value={data} />
+          <IconButtonCustomize
+            icon={Copy}
+            sizeIcon={16}
+            handleOnClick={handleCopyLink}
+          />
         </Stack>
 
         <Button
