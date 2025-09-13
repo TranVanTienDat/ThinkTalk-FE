@@ -1,4 +1,5 @@
 import { UserType } from "@/stores/user-store";
+import { NotificationType } from "./enum";
 
 export type DeviceType = {
   type: string;
@@ -48,21 +49,6 @@ export type UserDetail = {
   devices?: DeviceType;
 };
 
-type NotificationType =
-  | "message"
-  | "friend_request"
-  | "group_invite"
-  | "system";
-export type Notification = {
-  id: number;
-  title: string;
-  content: string;
-  isRead: boolean;
-  timestamp: string; // ISO date string
-  type: NotificationType;
-  avatar?: string;
-  name?: string;
-};
 
 export type MsgUserStatus = {
   id: string;
@@ -145,4 +131,19 @@ export type ApiParams = { page: number; limit: number };
 
 export type UserPrivateConversation = UserType & {
   chatId?: string;
+};
+
+
+
+export type Notification = {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  type: NotificationType;
+  isRead: boolean;
+  receiverId: UserType; 
+  target?: string | null;
+  actor?: string | null;
+  message: string;
+  data?: Record<string, any> | null;
 };

@@ -222,105 +222,6 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
     }
   });
 
-  // useSocketEvent("receive-message", (response: ResponseMsg) => {
-  //   const { status, data: msgRes, userId } = response;
-
-  //   // Chỉ xử lý các trạng thái 'success' hoặc 'error'
-  //   if (status !== "success" && status !== "error") return;
-
-  //   const message = msgRes as Message;
-  //   const isCurrentUser = userId === user.id;
-  //   const isSender = message.senderId === user.id;
-
-  //   // Hàm helper để chuẩn hóa tin nhắn (loại bỏ sendStatus)
-  //   const normalizeMessage = (msg: Message) => {
-  //     const { sendStatus, ...rest } = msg;
-  //     return rest;
-  //   };
-
-  //   // Cập nhật dữ liệu tin nhắn
-  //   if (status === "success" || (status === "error" && isCurrentUser)) {
-  //     queryClient.setQueryData([`msg-${message.chatId}`], (old: any) => {
-  //       if (!old) return old;
-
-  //       return {
-  //         ...old,
-  //         pages: old.pages.map((page: any) => {
-  //           let updatedData = page.data;
-
-  //           if (status === "success") {
-  //             if (isSender) {
-  //               // Cập nhật trạng thái gửi cho tin nhắn của người dùng hiện tại
-  //               updatedData = updatedData.map((item: Message) =>
-  //                 item.id === tempMsgIdRef.current
-  //                   ? { ...item, sendStatus: SendStatus.SENT }
-  //                   : normalizeMessage(item)
-  //               );
-  //             } else {
-  //               // Thêm tin nhắn mới và chuẩn hóa tất cả
-  //               updatedData = [
-  //                 normalizeMessage(message),
-  //                 ...updatedData.map(normalizeMessage),
-  //               ];
-  //             }
-  //           } else if (status === "error" && isCurrentUser) {
-  //             // Đánh dấu tin nhắn gửi thất bại
-  //             updatedData = updatedData.map((item: Message) =>
-  //               item.id === tempMsgIdRef.current
-  //                 ? { ...item, sendStatus: SendStatus.FAILED }
-  //                 : item
-  //             );
-  //           }
-
-  //           return { ...page, data: updatedData };
-  //         }),
-  //       };
-  //     });
-  //   }
-
-  //   // Cập nhật danh sách hội thoại cho tin nhắn nhận được
-  //   if (status === "success" && !isSender) {
-  //     queryClient.setQueryData(["conversations"], (old: any) => {
-  //       if (!old) return old;
-
-  //       return {
-  //         ...old,
-  //         pages: old.pages.map((page: any) => {
-  //           const data = [...page.data];
-  //           const itemIndex = data.findIndex(
-  //             (item: ChatItem) => item.id === message.chatId
-  //           );
-
-  //           if (itemIndex === -1) {
-  //             // Thêm hội thoại mới
-  //             const newChat: ChatItem = {
-  //               ...(message.chat as ChatItem),
-  //               isRead: false,
-  //               lastMessage: message,
-  //             };
-  //             return { ...page, data: [newChat, ...data] };
-  //           }
-
-  //           // Cập nhật hội thoại hiện có
-  //           const updatedItem: ChatItem = {
-  //             ...data[itemIndex],
-  //             lastMessage: message,
-  //             updatedAt: data[itemIndex]?.updatedAt || new Date().toISOString(),
-  //             createdAt: data[itemIndex].createdAt,
-  //             isRead: false,
-  //           };
-
-  //           // Di chuyển lên đầu danh sách
-  //           data.splice(itemIndex, 1);
-  //           data.unshift(updatedItem);
-
-  //           return { ...page, data };
-  //         }),
-  //       };
-  //     });
-  //   }
-  // });
-
   useSocketEvent("created-group", (response: ResponseCreateGroup) => {
     const { status, data: chat, sender } = response;
     // console.log("created-group", response);
@@ -490,6 +391,8 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
 
         return;
       }
+
+      console.log("userNewGroup", userNewGroup)
 
       const newChat = {
         name:

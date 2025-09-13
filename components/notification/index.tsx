@@ -1,3 +1,4 @@
+import { useNotifications } from "@/hooks/use-notifications";
 import { Notification } from "@/types";
 import { getDurationDate } from "@/utils";
 import {
@@ -7,11 +8,15 @@ import {
   Stack,
   styled,
   Typography,
-  useTheme,
+  useTheme
 } from "@mui/joy";
 import Link from "next/link";
-import { memo, useCallback, useState } from "react";
+import React, { memo, useCallback, useEffect, useState } from "react";
+import { useInView } from "react-intersection-observer";
+import Loading from "../base/Loading";
 import NotificationMenu from "./_menu";
+import { getNotificationTitle } from "@/utils/notification";
+import { Tag } from "antd";
 
 const BoxStyled = styled(Box)(({ theme }) => ({
   padding: "8px 0 8px 24px",
@@ -26,11 +31,11 @@ const BoxStyled = styled(Box)(({ theme }) => ({
 }));
 
 const Content = ({ props }: { props: Notification }) => {
-  const { name, title, content, isRead, timestamp } = props;
+  const { message, type, updatedAt, isRead, data } = props;
   const theme = useTheme();
   return (
     <Link
-      href={""}
+      href={`/workspace/t/${data?.id}`}
       style={{
         opacity: isRead ? 0.5 : 1,
       }}
@@ -53,30 +58,32 @@ const Content = ({ props }: { props: Notification }) => {
               fontWeight: 600,
             }}
           >
-            {name}
+            {data?.name}
           </Typography>
-          <div className="text-xs font-medium overflow-hidden truncate max-w-[210px]">
-            <Typography
-              sx={{
-                fontWeight: 600,
-                fontSize: "12px",
-                display: "inline-block",
-                color: theme.palette.secondary[200],
-              }}
-              level="body-xs"
-              component="span"
-            >
-              {title}
-            </Typography>{" "}
-            - {content}
-          </div>
+          <Typography
+            level="body-xs"
+            sx={{
+              fontWeight: 500,
+              display: "-webkit-box",
+              WebkitBoxOrient: "vertical",
+              WebkitLineClamp: 2,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              maxWidth: "250px", // Giới hạn chiều rộng để ellipsis hoạt động tốt
+            }}
+          >
+            <Tag color={getNotificationTitle(type).color} style={{ marginRight: 4 }}>
+              {getNotificationTitle(type).title}
+            </Tag>
+            - {message}
+          </Typography>
           <Typography
             level="body-xs"
             sx={{
               fontWeight: 700,
             }}
           >
-            {getDurationDate(timestamp)}
+            {getDurationDate(updatedAt)}
           </Typography>
         </Stack>
       </Badge>
@@ -85,8 +92,8 @@ const Content = ({ props }: { props: Notification }) => {
 };
 const ContentMemo = memo(Content);
 
-const ListNotification = ({ props }: { props: Notification }) => {
-  const { name, isRead } = props;
+const NotificationRender = ({ props }: { props: Notification }) => {
+  const { data, isRead } = props;
   const [open, setOpen] = useState(false);
 
   const onOpenChange = useCallback(
@@ -111,8 +118,8 @@ const ListNotification = ({ props }: { props: Notification }) => {
       }
     >
       <Avatar
-        alt={name}
-        src={`https://i.pravatar.cc/150?u=${props.id}`}
+        alt={data?.name}
+        src={data?.avatar}
         sx={{
           opacity: isRead ? 0.5 : 1,
         }}
@@ -123,4 +130,46 @@ const ListNotification = ({ props }: { props: Notification }) => {
   );
 };
 
-export default memo(ListNotification);
+export default function ListNotification() {
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isLoading
+  } = useNotifications("");
+
+    const { ref, inView } = useInView({
+    threshold: 0,
+  });
+
+
+   useEffect(() => {
+      if (inView) {
+        fetchNextPage?.();
+      }
+    }, [inView, fetchNextPage]);
+
+
+  if (isLoading) {
+    return (
+      <Loading />
+    );
+  }
+
+  return (
+    <Box>
+      {data?.pages.map((page, i) => (
+        <React.Fragment key={i}>
+          {page.data.map((notification: Notification) => (
+            <NotificationRender key={notification.id} props={notification} />
+          ))}
+        </React.Fragment>
+      ))}
+            {hasNextPage && (
+              <div ref={ref} className="my-3">
+                <Loading />
+              </div>
+            )}
+    </Box>
+  );
+}

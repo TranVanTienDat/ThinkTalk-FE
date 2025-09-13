@@ -3,6 +3,7 @@ import MainSidebar from "@/components/base/main-sidebar";
 import SwrInitor from "@/components/swr-initor";
 import { AppContextProvider } from "@/context/app-context";
 import { MessageHandlerProvider } from "@/context/message-handler-context";
+import { NotificationProvider } from "@/context/notification-context";
 import { SocketProvider } from "@/context/socket-context";
 import { Box, styled } from "@mui/joy";
 
@@ -20,6 +21,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <SwrInitor>
       <AppContextProvider>
         <SocketProvider autoConnect={true}>
+          <NotificationProvider>
           <MessageHandlerProvider>
             <BoxStyled>
               <MainSidebar />
@@ -28,6 +30,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </div>
             </BoxStyled>
           </MessageHandlerProvider>
+          </NotificationProvider>
         </SocketProvider>
       </AppContextProvider>
     </SwrInitor>

@@ -1,8 +1,7 @@
 "use client";
 
-import InputNotificationSearch from "@/components/notification/input-search";
 import ListNotification from "@/components/notification";
-import { notificationMockData } from "@/constants/mock-data";
+import InputNotificationSearch from "@/components/notification/input-search";
 import {
   Box,
   Button,
@@ -51,9 +50,7 @@ export default function NotificationTab() {
               },
             }}
           >
-            {notificationMockData.map((no) => (
-              <ListNotification key={no.id} props={no} />
-            ))}
+            <ListNotification/>
           </Box>
         </Stack>
       </Stack>
