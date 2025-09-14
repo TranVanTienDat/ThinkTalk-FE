@@ -32,6 +32,7 @@ const BoxStyled = styled(Box)(({ theme }) => ({
 
 const Content = ({ props }: { props: Notification }) => {
   const { message, type, updatedAt, isRead, data } = props;
+const {markAsRead} = useNotification()
   const theme = useTheme();
   return (
     <Link
@@ -39,6 +40,8 @@ const Content = ({ props }: { props: Notification }) => {
       style={{
         opacity: isRead ? 0.5 : 1,
       }}
+
+      onClick={() => markAsRead(props.id)}
     >
       <Badge
         anchorOrigin={{ vertical: "top", horizontal: "left" }}

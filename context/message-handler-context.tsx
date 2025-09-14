@@ -46,11 +46,14 @@ export type ResponseCreateGroup = ResponseSw & {
 type MessageContextType = {
   msgRead: Record<string, MessageRead[]>;
   userNewGroup: Option[];
+  newGroupName: string;
+  getNameGroup: (value: string) => void;
   updateHandler: (message: any) => void;
   setMessageRead: (msgId: string, msgRead: MessageRead[]) => void;
   markAsRead: (messageId: string, chatId: string) => void;
   getUserNewGroup: (value: Option[]) => void;
   getPrivateChatIdBetweenUsers: () => string | undefined;
+
 };
 
 export type MessageInputType = {
@@ -74,6 +77,7 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pendingReads = useRef<Map<string, PendingRead>>(new Map());
   const [userNewGroup, setUserNewGroup] = useState<Option[]>([]);
+  const [newGroupName, setNewGroupName] = useState<string>('New group');
   const tempMsgIdRef = useRef("");
   const [msgRead, setMsgRead] = useState<Record<string, MessageRead[]>>({});
 
@@ -352,6 +356,10 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
     setUserNewGroup([...value]);
   }, []);
 
+  const getNameGroup = useCallback((value: string) => {
+    setNewGroupName(value);
+  }, []);
+
   const setMessageRead = useCallback(
     (msgId: string, msgRead: MessageRead[]) => {
       setMsgRead((prev) => ({
@@ -392,13 +400,11 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      console.log("userNewGroup", userNewGroup)
-
       const newChat = {
         name:
           userNewGroup.length === 1
             ? userNewGroup[0].label
-            : `Nhóm ${userNewGroup.map((obj) => obj.label).join(", ")}`,
+            : newGroupName,
         avatar: userNewGroup.length === 1 ? userNewGroup[0].avatar : null,
         type: userNewGroup.length === 1 ? "private" : "group",
         chatMembers: userNewGroup.map((item) => ({
@@ -423,6 +429,7 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
       getPrivateChatIdBetweenUsers,
       userNewGroup,
       pathName,
+      newGroupName
     ]
   );
 
@@ -439,11 +446,13 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
       value={{
         msgRead,
         userNewGroup,
+        newGroupName,
         updateHandler,
         setMessageRead,
         markAsRead,
         getUserNewGroup,
         getPrivateChatIdBetweenUsers,
+        getNameGroup,
       }}
     >
       {children}

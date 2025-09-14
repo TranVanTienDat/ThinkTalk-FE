@@ -14,6 +14,7 @@ import {
   type ReactNode
 } from "react";
 import { useAppContext } from "./app-context";
+import { notificationApi } from "@/apiRequest/notification";
 
 type ResponseSw = {
   status: "success" | "error";
@@ -36,12 +37,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const { user } = useAppContext();
   const { contextHolder, openNotification } = useNotificationToast()
   const queryClient = useQueryClient();
-  const query  = useNotifications("");
+  const query  = useNotifications();
 
 
   const handleNewNotification = useCallback(
     (res: ResponseSw) => {
-      console.log("ntf",res)
       if(res.status !== 'success') return 
       queryClient.setQueryData(
         ["notifications"],
@@ -72,13 +72,38 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   const markAsRead = useCallback(
     async (notificationId: string) => {
-      queryClient.setQueryData(
-        ["notifications", user?.id],
-        (oldData: Notification[] = []) =>
-          oldData.map((n) =>
-            n.id === notificationId ? { ...n, read: true } : n
-          )
+
+    const res = await notificationApi.update(notificationId, {
+      isRead: true,
+    });
+
+    if(!res) return
+
+    console.log(res)
+     queryClient.setQueryData(
+        ["notifications"],
+        (oldData:any) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page: any) => {
+                        return {
+                          ...page,
+                          data: page.data.map((item: any) => {
+                            if (item.id === res.id) {
+                              return {
+                                ...item,
+                                isRead: true,
+                              };
+                            }
+                            return item;
+                          })
+                        };                  
+          })
+        }
+      }
       );
+
     },
     [queryClient, user?.id]
   );
@@ -93,7 +118,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   }, [queryClient, user?.id]);
 
 
-  const unreadCount = useMemo(() => {
+   const unreadCount = useMemo(() => {
      const notifications = query.data?.pages.flatMap((page) => page.data) || [];
 
     return notifications.filter((n) => !n.isRead).length;

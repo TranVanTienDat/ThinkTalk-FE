@@ -2,47 +2,45 @@
 
 import ListNotification from "@/components/notification";
 import InputNotificationSearch from "@/components/notification/input-search";
-import { useNotification } from "@/context/notification-context";
+import { useFilterNotification } from "@/hooks/use-filter-notification";
 import {
-  Badge,
   Box,
   Button,
-  ButtonGroup,
   Stack,
   TabPanel,
   Typography,
-  useTheme,
+  useTheme
 } from "@mui/joy";
 
 export default function NotificationTab() {
-  const theme = useTheme();
-    const {  unreadCount } = useNotification()
-  
+    const theme = useTheme();
+   const {filter,setFilter} = useFilterNotification()
+
+
+ 
   return (
     <TabPanel value={1}>
       {/* search */}
       <Stack direction="column" spacing={3}>
         <InputNotificationSearch />
         <Stack direction="column" spacing={1}>
-          <div className="flex justify-start
-           items-center gap-4">
-          <Typography level="h4"
-          sx={{
-           width:'fit-content'
-          }}>
+          <Typography level="h4">
             Nhận thông báo
           </Typography>
-          <Badge badgeContent={unreadCount} variant="solid">
-</Badge>
-</div>
-          <ButtonGroup
-            spacing="0.5rem"
-            aria-label="spacing button group"
-            variant="soft"
-          >
-            <Button>Tất cả</Button>
-            <Button>Chưa đọc</Button>
-          </ButtonGroup>
+         <Stack direction={"row"} spacing={1} >
+            <Button
+              onClick={() => setFilter("all")}
+              variant={filter === "all" ? "soft" : "plain"}
+            >
+              Tất cả
+            </Button>
+            <Button
+              onClick={() => setFilter("unread")}
+              variant={filter === "unread" ? "soft" : "plain"}
+            >
+              Chưa đọc
+            </Button>
+          </Stack>
         </Stack>
 
         <Stack direction="column" spacing={1}>
@@ -63,7 +61,7 @@ export default function NotificationTab() {
               },
             }}
           >
-            <ListNotification/>
+            <ListNotification />
           </Box>
         </Stack>
       </Stack>

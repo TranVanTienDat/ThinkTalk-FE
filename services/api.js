@@ -66,6 +66,15 @@ const put = async (url, data, config = {}) => {
   }
 };
 
-const servicesApi = { get, post, put };
+const patch = async (url, data, config = {}) => {
+  try {
+    const response = await axiosInstance.patch(url, data, config);
+    return response.data;
+  } catch (error) {
+    throw error.response || error.message;
+  }
+};
+
+const servicesApi = { get, post, put, patch };
 
 export default servicesApi;

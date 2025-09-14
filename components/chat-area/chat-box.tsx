@@ -8,11 +8,12 @@ import {
   Avatar,
   AvatarGroup,
   Box,
+  Input,
   Stack,
   Typography,
   useTheme,
 } from "@mui/joy";
-import { memo, ReactNode } from "react";
+import { memo, ReactNode, useState } from "react";
 import { useStore } from "zustand";
 import { InputBox } from "./input-box";
 import MessagesPane from "./message/message-pane";
@@ -54,8 +55,10 @@ export const ChatBox = ({ params }: { params: Params }) => {
 const AvatarHeader = ({ params }: { params: Params }) => {
   const { user } = useAppContext();
   const theme = useTheme();
-  const { userNewGroup } = useMessageHandler();
+  const { userNewGroup,newGroupName,getNameGroup } = useMessageHandler();
   const userInfo = useStore(useConversationInfoStore, (state) => state.data);
+  const [isEditing, setIsEditing] = useState(false);
+
   const chatInfo = userInfo[params.id];
   const getMyFriend = () => {
     return chatInfo.chatMembers.find((m) => m.user.id !== user.id)?.user;
@@ -112,13 +115,35 @@ const AvatarHeader = ({ params }: { params: Params }) => {
               );
             })}
           </AvatarGroup>
-          <Typography
-            level="h4"
-            lineHeight={1}
-            sx={{ fontWeight: 700, color: theme.palette.primary[700] }}
-          >
-            {userNewGroup?.length === 1 ? userNewGroup[0].label : "Nhóm mới"}
-          </Typography>
+          {userNewGroup?.length > 1 && isEditing ? (
+            <Input
+              autoFocus
+              value={newGroupName}
+              onChange={(e) => getNameGroup(e.target.value)}
+              onBlur={() => setIsEditing(false)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setIsEditing(false);
+                }
+              }}
+              sx={{
+                fontWeight: 700,
+                fontSize: "var(--joy-fontSize-h4)",
+                '--Input-focusedThickness': '0'
+              }}
+            />
+          ) : (
+            <Typography
+              level="h4"
+              lineHeight={1}
+              sx={{ fontWeight: 700, color: theme.palette.primary[700], cursor: userNewGroup?.length > 1 ? 'pointer' : 'default' }}
+              onDoubleClick={() => {
+                if (userNewGroup?.length > 1) setIsEditing(true);
+              }}
+            >
+              {userNewGroup?.length === 1 ? userNewGroup[0].label : newGroupName}
+            </Typography>
+          )}
         </CommonLayout>
       )}
     </>
