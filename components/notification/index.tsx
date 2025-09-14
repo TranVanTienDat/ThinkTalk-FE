@@ -1,6 +1,7 @@
-import { useNotifications } from "@/hooks/use-notifications";
+import { useNotification } from "@/context/notification-context";
 import { Notification } from "@/types";
 import { getDurationDate } from "@/utils";
+import { getNotificationTitle } from "@/utils/notification";
 import {
   Avatar,
   Badge,
@@ -10,13 +11,12 @@ import {
   Typography,
   useTheme
 } from "@mui/joy";
+import { Tag } from "antd";
 import Link from "next/link";
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import Loading from "../base/Loading";
 import NotificationMenu from "./_menu";
-import { getNotificationTitle } from "@/utils/notification";
-import { Tag } from "antd";
 
 const BoxStyled = styled(Box)(({ theme }) => ({
   padding: "8px 0 8px 24px",
@@ -131,12 +131,14 @@ const NotificationRender = ({ props }: { props: Notification }) => {
 };
 
 export default function ListNotification() {
+
+  const {  query } = useNotification()
   const {
     data,
     fetchNextPage,
     hasNextPage,
     isLoading
-  } = useNotifications("");
+  } = query
 
     const { ref, inView } = useInView({
     threshold: 0,

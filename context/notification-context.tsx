@@ -1,23 +1,31 @@
 "use client";
 
+import { useNotification as useNotificationToast } from "@/hooks/use-notification";
+import { useNotifications } from "@/hooks/use-notifications";
 import { useSocketEvent } from "@/hooks/use-socket-event";
-import { useToast } from "@/hooks/use-toast";
 import { Notification } from "@/types";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getNotificationTitle } from "@/utils/notification";
+import { InfiniteData, UseInfiniteQueryResult, useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
   useCallback,
   useContext,
   useMemo,
-  type ReactNode,
+  type ReactNode
 } from "react";
 import { useAppContext } from "./app-context";
 
+type ResponseSw = {
+  status: "success" | "error";
+  message: string;
+  data?: Notification;
+};
+
 type NotificationContextType = {
-  notifications: Notification[];
   unreadCount: number;
   markAsRead: (notificationId: string) => void;
   markAllAsRead: () => void;
+  query: UseInfiniteQueryResult<InfiniteData<{ data: Notification[]; nextCursor: number | undefined; }, unknown>, Error>
 };
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
@@ -26,43 +34,44 @@ const NotificationContext = createContext<NotificationContextType | undefined>(
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const { user } = useAppContext();
-  const { toast } = useToast();
+  const { contextHolder, openNotification } = useNotificationToast()
   const queryClient = useQueryClient();
+  const query  = useNotifications("");
 
-  const { data: notifications = [] } = useQuery<Notification[]>({
-    queryKey: ["notifications", user?.id],
-    queryFn: async () => {
-      // TODO: Implement API call to fetch notifications
-      // const res = await notificationApi.getList();
-      // return res.data;
-      return []; // Returning empty array as API is not available
-    },
-    enabled: !!user?.id,
-  });
 
   const handleNewNotification = useCallback(
-    (newNotification: Notification) => {
+    (res: ResponseSw) => {
+      console.log("ntf",res)
+      if(res.status !== 'success') return 
       queryClient.setQueryData(
-        ["notifications", user?.id],
-        (oldData: Notification[] = []) => {
-          return [newNotification, ...oldData];
+        ["notifications"],
+        (oldData:any) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page: any) => {
+                        return {
+                          ...page,
+                          data: [res.data, ...page.data],
+                        };                  
+          })
         }
+      }
       );
 
-      toast({
-        title: newNotification.message,
-        description: newNotification.message,
+      openNotification({
+        title: getNotificationTitle(res?.data?.type as any).title,
+        description: res.message,
+        type: 'success'
       });
     },
-    [queryClient, user?.id, toast]
+    [queryClient]
   );
 
   useSocketEvent("notification", handleNewNotification);
 
   const markAsRead = useCallback(
     async (notificationId: string) => {
-      // TODO: Implement API call to mark notification as read
-      // await notificationApi.read(notificationId);
       queryClient.setQueryData(
         ["notifications", user?.id],
         (oldData: Notification[] = []) =>
@@ -83,19 +92,23 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     );
   }, [queryClient, user?.id]);
 
+
   const unreadCount = useMemo(() => {
+     const notifications = query.data?.pages.flatMap((page) => page.data) || [];
+
     return notifications.filter((n) => !n.isRead).length;
-  }, [notifications]);
+  }, [query.data?.pages]);
 
   return (
     <NotificationContext.Provider
       value={{
-        notifications,
         unreadCount,
         markAsRead,
         markAllAsRead,
+        query
       }}
     >
+      {contextHolder}
       {children}
     </NotificationContext.Provider>
   );

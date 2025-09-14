@@ -22,7 +22,7 @@ const fetchNotifications = async ({
 
 export const useNotifications = (search: string = "") => {
   return useInfiniteQuery({
-    queryKey: ["notifications", search],
+    queryKey: ["notifications"],
     queryFn: ({ pageParam }) => fetchNotifications({ pageParam, search }),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
