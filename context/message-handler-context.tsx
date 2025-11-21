@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-// import { MessageType } from "antd/es/message/interface";
 import { Option } from "@/app/workspace/t/[id]/_components/new-conversation";
 import { useSocketEmit } from "@/hooks/use-socket-emit";
 import { useSocketEvent } from "@/hooks/use-socket-event";
@@ -67,6 +65,89 @@ interface PendingRead {
   chatId: string;
 }
 
+// Helper functions for query data manipulation
+const removeMessageSendStatus = (message: Message): Omit<Message, 'sendStatus'> => {
+  const { sendStatus, ...rest } = message;
+  return rest;
+};
+
+const updateMessageInPages = (
+  pages: any[],
+  predicate: (message: Message) => boolean,
+  updater: (message: Message) => Message
+) => {
+  return pages.map((page: any) => ({
+    ...page,
+    data: page.data.map((item: Message) => 
+      predicate(item) ? updater(item) : item
+    ),
+  }));
+};
+
+const cleanSendStatusFromPages = (pages: any[]) => {
+  return pages.map((page: any) => ({
+    ...page,
+    data: page.data.map(removeMessageSendStatus),
+  }));
+};
+
+const addMessageToFirstPage = (pages: any[], newMessage: Message) => {
+  return pages.map((page: any, index: number) => {
+    if (index === 0) {
+      const cleanMessage = removeMessageSendStatus(newMessage);
+      return {
+        ...page,
+        data: [cleanMessage, ...page.data.map(removeMessageSendStatus)],
+      };
+    }
+    return {
+      ...page,
+      data: page.data.map(removeMessageSendStatus),
+    };
+  });
+};
+
+const updateConversationLastMessage = (
+  pages: any[],
+  chatId: string,
+  lastMessage: Message,
+  isRead: boolean = false
+) => {
+  return pages.map((page: any) => {
+    const itemIndex = page.data.findIndex((item: ChatItem) => item.id === chatId);
+    
+    if (itemIndex === -1) {
+      return page;
+    }
+
+    const newData = [...page.data];
+    newData[itemIndex] = {
+      ...newData[itemIndex],
+      lastMessage,
+      updatedAt: new Date().toISOString(),
+      isRead,
+    };
+
+    // Move to top
+    const [movedItem] = newData.splice(itemIndex, 1);
+    newData.unshift(movedItem);
+
+    return {
+      ...page,
+      data: newData,
+    };
+  });
+};
+
+const addNewChatToConversations = (pages: any[], chat: ChatItem) => {
+  return [
+    {
+      data: [chat],
+    },
+    ...pages,
+  ];
+};
+
 const MessageContext = createContext<MessageContextType | undefined>(undefined);
 
 export function MessageHandlerProvider({ children }: { children: ReactNode }) {
@@ -83,197 +164,140 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
 
   useSocketEvent("receive-message", (response: ResponseMsg) => {
     const { status, data: msgRes, userId } = response;
-    // console.log("res", response);
-    if (status === "success" && (msgRes as Message).senderId === user.id) {
-      queryClient.setQueryData([`msg-${msgRes.chatId}`], (old: any) => {
+    const message = msgRes as Message;
+
+    // Handle successful message sent by current user
+    if (status === "success" && message.senderId === user.id) {
+      queryClient.setQueryData([`msg-${message.chatId}`], (old: any) => {
         if (!old) return old;
 
         return {
           ...old,
-          pages: old.pages.map((page: any) => {
-            return {
-              ...page,
-              data: page.data.map((item: Message) => {
-                if (item.id !== tempMsgIdRef.current) {
-                  const { sendStatus, ...rest } = item;
-                  return {
-                    ...rest,
-                  };
-                }
-
-                return {
-                  ...item,
-                  sendStatus: SendStatus.SENT,
-                };
-              }),
-            };
-          }),
+          pages: updateMessageInPages(
+            old.pages,
+            (item) => item.id === tempMsgIdRef.current,
+            (item) => ({ ...item, sendStatus: SendStatus.SENT })
+          ),
         };
       });
-    } else if (
-      status === "success" &&
-      (msgRes as Message).senderId !== user.id
-    ) {
-      queryClient.setQueryData([`msg-${msgRes.chatId}`], (old: any) => {
+      return;
+    }
+
+    // Handle message received from another user
+    if (status === "success" && message.senderId !== user.id) {
+      // Update messages query
+      queryClient.setQueryData([`msg-${message.chatId}`], (old: any) => {
         if (!old) return old;
 
-        const firstPageIndex = 0;
-
-        // Tránh thêm trùng tin nhắn (so theo id)
+        // Avoid duplicate messages
         const alreadyExists = old.pages.some((page: any) =>
-          page.data.some((item: Message) => item.id === (msgRes as Message).id)
+          page.data.some((item: Message) => item.id === message.id)
         );
         if (alreadyExists) return old;
 
         return {
           ...old,
-          pages: old.pages.map((page: any, index: number) => {
-            const cleanData = page.data.map((item: Message) => {
-              const { sendStatus, ...rest } = item;
-              return rest;
-            });
-
-            if (index === firstPageIndex) {
-              // ✅ Thêm msgRes (đã clean) vào đầu page đầu
-              const { sendStatus, ...cleanMsgRes } = msgRes as Message;
-              return {
-                ...page,
-                data: [cleanMsgRes, ...cleanData],
-              };
-            }
-
-            // Các page còn lại: chỉ clean sendStatus
-            return {
-              ...page,
-              data: cleanData,
-            };
-          }),
+          pages: addMessageToFirstPage(old.pages, message),
         };
       });
 
+      // Update conversations query
       queryClient.setQueryData(["conversations"], (old: any) => {
         if (!old) return old;
 
         return {
           ...old,
           pages: old.pages.map((page: any) => {
-            // Tìm index của item cần cập nhật
             const itemIndex = page.data.findIndex(
-              (item: ChatItem) => item.id === msgRes.chatId
+              (item: ChatItem) => item.id === message.chatId
             );
 
-            if (itemIndex === -1) {
+            // If chat not found, add new chat to the list
+            if (itemIndex === -1 && message.chat) {
               const newChat: ChatItem = {
-                ...((msgRes as Message).chat as ChatItem),
+                ...message.chat,
                 isRead: false,
-                lastMessage: msgRes as Message,
-              };
+                lastMessage: message,
+              } as ChatItem;
 
               return { ...page, data: [newChat, ...page.data] };
             }
 
-            // Tạo bản sao của data để không mutate trực tiếp
-            const newData = [...page.data];
+            // Update existing chat
+            if (itemIndex !== -1) {
+              const newData = [...page.data];
+              newData[itemIndex] = {
+                ...newData[itemIndex],
+                lastMessage: message,
+                updatedAt: newData[itemIndex]?.updatedAt || new Date().toISOString(),
+                isRead: false,
+              };
 
-            // Cập nhật item
-            const updatedItem: ChatItem = {
-              ...newData[itemIndex],
-              lastMessage: msgRes as Message,
-              updatedAt:
-                newData[itemIndex]?.updatedAt || new Date().toISOString(),
-              createdAt: newData[itemIndex].createdAt,
-              isRead: false,
-            };
-            // Gán item đã cập nhật
-            newData[itemIndex] = updatedItem;
+              // Move to top
+              const [movedItem] = newData.splice(itemIndex, 1);
+              newData.unshift(movedItem);
 
-            // Di chuyển item lên đầu mảng
-            const [movedItem] = newData.splice(itemIndex, 1);
-            newData.unshift(movedItem);
+              return { ...page, data: newData };
+            }
 
-            return {
-              ...page,
-              data: newData,
-            };
+            return page;
           }),
         };
       });
-    } else if (status === "error" && userId === user.id) {
-      queryClient.setQueryData(
-        [`msg-${(msgRes as Message).chatId}`],
-        (old: any) => {
-          if (!old) return old;
+      return;
+    }
 
-          return {
-            ...old,
-            pages: old.pages.map((page: any) => {
-              return {
-                ...page,
-                data: page.data.map((item: Message) => {
-                  if (item.id === tempMsgIdRef.current) {
-                    return {
-                      ...item,
-                      sendStatus: SendStatus.FAILED,
-                    };
-                  }
-                  return item;
-                }),
-              };
-            }),
-          };
-        }
-      );
+    // Handle failed message send
+    if (status === "error" && userId === user.id) {
+      queryClient.setQueryData([`msg-${message.chatId}`], (old: any) => {
+        if (!old) return old;
+
+        return {
+          ...old,
+          pages: updateMessageInPages(
+            old.pages,
+            (item) => item.id === tempMsgIdRef.current,
+            (item) => ({ ...item, sendStatus: SendStatus.FAILED })
+          ),
+        };
+      });
     }
   });
 
   useSocketEvent("created-group", (response: ResponseCreateGroup) => {
     const { status, data: chat, sender } = response;
-    // console.log("created-group", response);
+    
     if (status === "success") {
+      // Invalidate conversations to refetch with new group
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
-      // queryClient.setQueryData(["conversations"], (old: any) => {
-      //   if (!old) return old;
-
-      //   return {
-      //     ...old,
-      //     pages: [
-      //       {
-      //         data: [
-      //           {
-      //             ...chat,
-      //             senderId: sender.id,
-      //           } as ChatItem,
-      //         ],
-      //       },
-      //       ...old.pages,
-      //     ],
-      //   };
-      // });
-      if (sender.id === user.id) router.replace(`/workspace/t/${chat.id}`);
+      
+      // Redirect to new chat if current user created it
+      if (sender.id === user.id) {
+        router.replace(`/workspace/t/${chat.id}`);
+      }
     }
   });
 
+  // Add optimistic message to the first page
   const updateEventMessage = useCallback(
     (msg: Message) => {
       queryClient.setQueryData([`msg-${msg.chatId}`], (old: any) => {
         if (!old) return old;
+        
         return {
           ...old,
-          pages: old.pages.map((page: any, index: number) => {
-            if (index === 0) {
-              return {
-                ...page,
-                data: [msg, ...(page.data || [])],
-              };
-            }
-            return page;
-          }),
+          pages: old.pages.map((page: any, index: number) => 
+            index === 0 
+              ? { ...page, data: [msg, ...(page.data || [])] }
+              : page
+          ),
         };
       });
     },
     [queryClient]
   );
 
+  // Update conversation list with new message
   const updateEventConversation = useCallback(
     (msg: Message) => {
       queryClient.setQueryData(["conversations"], (old: any) => {
@@ -281,43 +305,20 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
 
         return {
           ...old,
-          pages: old.pages.map((page: any) => {
-            const itemIndex = page.data.findIndex(
-              (item: ChatItem) => item.id === msg.chatId
-            );
-
-            if (itemIndex === -1) return page;
-
-            const newData = [...page.data];
-
-            const dataUpdate = {
-              ...newData[itemIndex],
-              lastMessage: msg,
-              updatedAt: new Date().toISOString(),
-            };
-
-            newData[itemIndex] = dataUpdate;
-
-            const [movedItem] = newData.splice(itemIndex, 1);
-            newData.unshift(movedItem);
-
-            return {
-              ...page,
-              data: newData,
-            };
-          }),
+          pages: updateConversationLastMessage(old.pages, msg.chatId, msg, true),
         };
       });
     },
     [queryClient]
   );
 
+  // Batch read messages to reduce socket emissions
   const sendBatchRead = useDebouncedCallback(() => {
     if (pendingReads.current.size === 0) return;
 
     const reads = Array.from(pendingReads.current.values());
 
-    // Nhóm theo chatId để gửi các batch riêng biệt
+    // Group by chatId for separate batch emissions
     const readsByChat = reads.reduce((acc, read) => {
       if (!acc[read.chatId]) {
         acc[read.chatId] = [];
@@ -326,26 +327,21 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
       return acc;
     }, {} as Record<string, string[]>);
 
-    // Gửi từng batch theo chatId
-
+    // NOTE: Batch read emission currently disabled
+    // Uncomment when backend endpoint is ready:
     // Object.entries(readsByChat).forEach(([chatId, messageIds]) => {
-    //   emit("messages:batch-read", {
-    //     messageIds,
-    //     chatId,
-    //   });
+    //   emit("messages:batch-read", { messageIds, chatId });
     // });
 
     pendingReads.current.clear();
-  }, 3000); // Debounce 500ms
+  }, 3000);
 
   const markAsRead = useCallback(
     (messageId: string, chatId: string) => {
       const key = `${chatId}-${messageId}`;
+      
       if (!pendingReads.current.has(key)) {
-        pendingReads.current.set(key, {
-          messageId,
-          chatId,
-        });
+        pendingReads.current.set(key, { messageId, chatId });
         sendBatchRead();
       }
     },
@@ -353,60 +349,58 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
   );
 
   const getUserNewGroup = useCallback((value: Option[]) => {
-    setUserNewGroup([...value]);
+    setUserNewGroup(value);
   }, []);
 
   const getNameGroup = useCallback((value: string) => {
     setNewGroupName(value);
   }, []);
 
-  const setMessageRead = useCallback(
-    (msgId: string, msgRead: MessageRead[]) => {
-      setMsgRead((prev) => ({
-        ...prev,
-        [msgId]: msgRead,
-      }));
-    },
-    []
-  );
+  const setMessageRead = useCallback((msgId: string, msgRead: MessageRead[]) => {
+    setMsgRead((prev) => ({ ...prev, [msgId]: msgRead }));
+  }, []);
+
+  // Get private chat ID when only one user is selected
   const getPrivateChatIdBetweenUsers = useCallback(() => {
-    if (userNewGroup.length === 1) {
-      return userNewGroup[0].chatId;
-    }
+    return userNewGroup.length === 1 ? userNewGroup[0].chatId : undefined;
   }, [userNewGroup]);
 
   const updateHandler = useCallback(
     (message: MessageInputType) => {
+      // Generate unique temporary message ID
       tempMsgIdRef.current = uuidv4();
-      let msg: Message = createMessage({
-        chatId: message.chatId,
-        content: message.message,
-        type: message.type,
-        msgId: tempMsgIdRef.current,
-        user,
-      });
-      if (
-        !pathName.includes("/workspace/t/new") ||
-        getPrivateChatIdBetweenUsers?.()
-      ) {
-        msg = {
-          ...msg,
-          chatId: (getPrivateChatIdBetweenUsers() as string) ?? message.chatId,
-        };
+      
+      // Check if we're creating a new conversation or using existing one
+      const isNewConversation = pathName.includes("/workspace/t/new");
+      const privateChatId = getPrivateChatIdBetweenUsers();
+      
+      // Handle existing conversation or private chat
+      if (!isNewConversation || privateChatId) {
+        const targetChatId = privateChatId ?? message.chatId;
+        
+        const msg = createMessage({
+          chatId: targetChatId,
+          content: message.message,
+          type: message.type,
+          msgId: tempMsgIdRef.current,
+          user,
+        });
+
+        // Optimistically update UI
         updateEventMessage(msg);
         updateEventConversation(msg);
-        emit("send-message", { ...message, chatId: msg.chatId });
-
+        
+        // Send message via socket
+        emit("send-message", { ...message, chatId: targetChatId });
         return;
       }
 
+      // Handle new group/private chat creation
+      const isPrivateChat = userNewGroup.length === 1;
       const newChat = {
-        name:
-          userNewGroup.length === 1
-            ? userNewGroup[0].label
-            : newGroupName,
-        avatar: userNewGroup.length === 1 ? userNewGroup[0].avatar : null,
-        type: userNewGroup.length === 1 ? "private" : "group",
+        name: isPrivateChat ? userNewGroup[0].label : newGroupName,
+        avatar: isPrivateChat ? userNewGroup[0].avatar : null,
+        type: isPrivateChat ? "private" : "group",
         chatMembers: userNewGroup.map((item) => ({
           userId: item.value,
           role: ChatRole.MEMBER,
@@ -417,9 +411,7 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
         },
       };
 
-      emit("create-group", {
-        ...newChat,
-      });
+      emit("create-group", newChat);
     },
     [
       user,
@@ -429,14 +421,13 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
       getPrivateChatIdBetweenUsers,
       userNewGroup,
       pathName,
-      newGroupName
+      newGroupName,
     ]
   );
 
-  // Xử lý khi component unmount
+  // Cleanup: flush any pending read receipts on unmount
   useEffect(() => {
     return () => {
-      console.log("component unmount");
       sendBatchRead.flush();
     };
   }, [sendBatchRead]);
