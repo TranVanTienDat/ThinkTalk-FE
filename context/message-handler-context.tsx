@@ -84,13 +84,6 @@ const updateMessageInPages = (
   }));
 };
 
-const cleanSendStatusFromPages = (pages: any[]) => {
-  return pages.map((page: any) => ({
-    ...page,
-    data: page.data.map(removeMessageSendStatus),
-  }));
-};
-
 const addMessageToFirstPage = (pages: any[], newMessage: Message) => {
   return pages.map((page: any, index: number) => {
     if (index === 0) {
@@ -111,12 +104,22 @@ const updateConversationLastMessage = (
   pages: any[],
   chatId: string,
   lastMessage: Message,
-  isRead: boolean = false
+  isRead: boolean = false,
+  shouldAddIfNotFound: boolean = false
 ) => {
   return pages.map((page: any) => {
     const itemIndex = page.data.findIndex((item: ChatItem) => item.id === chatId);
     
+    // Add new chat if not found and flag is set
     if (itemIndex === -1) {
+      if (shouldAddIfNotFound && lastMessage.chat) {
+        const newChat: ChatItem = {
+          ...lastMessage.chat,
+          isRead: false,
+          lastMessage,
+        } as ChatItem;
+        return { ...page, data: [newChat, ...page.data] };
+      }
       return page;
     }
 
@@ -137,15 +140,6 @@ const updateConversationLastMessage = (
       data: newData,
     };
   });
-};
-
-const addNewChatToConversations = (pages: any[], chat: ChatItem) => {
-  return [
-    {
-      data: [chat],
-    },
-    ...pages,
-  ];
 };
 
 const MessageContext = createContext<MessageContextType | undefined>(undefined);
@@ -207,41 +201,13 @@ export function MessageHandlerProvider({ children }: { children: ReactNode }) {
 
         return {
           ...old,
-          pages: old.pages.map((page: any) => {
-            const itemIndex = page.data.findIndex(
-              (item: ChatItem) => item.id === message.chatId
-            );
-
-            // If chat not found, add new chat to the list
-            if (itemIndex === -1 && message.chat) {
-              const newChat: ChatItem = {
-                ...message.chat,
-                isRead: false,
-                lastMessage: message,
-              } as ChatItem;
-
-              return { ...page, data: [newChat, ...page.data] };
-            }
-
-            // Update existing chat
-            if (itemIndex !== -1) {
-              const newData = [...page.data];
-              newData[itemIndex] = {
-                ...newData[itemIndex],
-                lastMessage: message,
-                updatedAt: newData[itemIndex]?.updatedAt || new Date().toISOString(),
-                isRead: false,
-              };
-
-              // Move to top
-              const [movedItem] = newData.splice(itemIndex, 1);
-              newData.unshift(movedItem);
-
-              return { ...page, data: newData };
-            }
-
-            return page;
-          }),
+          pages: updateConversationLastMessage(
+            old.pages, 
+            message.chatId, 
+            message, 
+            false,  // isRead = false for new messages from others
+            true    // shouldAddIfNotFound = true
+          ),
         };
       });
       return;
