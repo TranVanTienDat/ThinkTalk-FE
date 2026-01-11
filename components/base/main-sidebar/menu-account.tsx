@@ -1,5 +1,6 @@
 "use client";
 
+import ProfileDialog from "@/components/account/profile-dialog";
 import AccountSettingsAndSecurityModal from "@/components/account/setting-security-modal";
 import { menuAccount } from "@/constants";
 import { useAppContext } from "@/context/app-context";
@@ -35,6 +36,7 @@ export default function MenuAccount() {
   const { contextHolder, openNotification } = useNotification();
   const [open, setOpen] = useState(false);
   const [key, setKey] = useState("");
+  const [openProfile, setOpenProfile] = useState(false);
   const deviceInfoRef = useRef({});
   useEffect(() => {
     const du = new DeviceUUID().parse();
@@ -57,6 +59,10 @@ export default function MenuAccount() {
     switch (key) {
       case "logout":
         handleLogout();
+        break;
+      case "account":
+        setOpenProfile(true);
+        break;
     }
   }, []);
 
@@ -71,6 +77,7 @@ export default function MenuAccount() {
   return (
     <>
       {contextHolder}
+      <ProfileDialog open={openProfile} onClose={() => setOpenProfile(false)} />
       <Dropdown open={open} onOpenChange={handleOpenChange}>
         <MenuButton
           slots={{ root: Avatar }}

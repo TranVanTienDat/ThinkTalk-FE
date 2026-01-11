@@ -104,7 +104,7 @@ const generateThemeOptions = (): CssVarsThemeOptions => {
             color: colors.secondary[100],
             fontSize: "14px",
             fontWeight: 400,
-            borderRadius: "12px",
+            borderRadius: "8px",
             borderColor: colors.secondary[300],
             height: "40px",
             "&:hover": {
