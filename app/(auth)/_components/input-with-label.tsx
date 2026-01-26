@@ -1,16 +1,30 @@
 "use client";
-import { useFormContext } from "react-hook-form";
-import { Input } from "@/components/ui/input";
+import { useFormContext, Controller } from "react-hook-form";
 import {
-  FormField,
   FormControl,
-  FormItem,
   FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import clsx from "clsx";
-import { HTMLInputTypeAttribute, KeyboardEventHandler, useEffect } from "react";
-import { cn } from "@/lib/utils";
+  Input,
+  FormHelperText,
+  styled,
+  IconButton,
+} from "@mui/joy";
+import { HTMLInputTypeAttribute, KeyboardEventHandler, useState } from "react";
+import { Eye, EyeOff, AlertCircle } from "lucide-react";
+
+const StyledInput = styled(Input)(({ theme }) => ({
+  "--Input-radius": "12px",
+  "--Input-placeholderOpacity": 0.5,
+  "--Input-focusedThickness": "2px",
+  backgroundColor: theme.vars.palette.background.surface,
+  transition: "all 0.2s ease",
+  "&:hover": {
+    boxShadow: theme.vars.shadow.sm,
+  },
+  "&:focus-within": {
+    boxShadow: theme.vars.shadow.md,
+    transform: "translateY(-1px)",
+  },
+}));
 
 type Props = {
   fieldTitle: string;
@@ -20,7 +34,6 @@ type Props = {
   readOnly?: boolean;
   className?: string;
   type?: HTMLInputTypeAttribute | undefined;
-  prefix?: string;
   onKeyDown?: KeyboardEventHandler<HTMLInputElement>;
 };
 
@@ -31,74 +44,88 @@ export function InputWithLabel({
   labelLeft,
   readOnly,
   className,
-  type,
+  type = "text",
   onKeyDown,
-  prefix = "",
 }: Props) {
-  const form = useFormContext();
-  const fieldTitleNoSpaces = fieldTitle.replaceAll(" ", "-");
-  useEffect(() => {
-    if (!form.getValues(nameInSchema)) {
-      form.setValue(nameInSchema, prefix, { shouldDirty: true });
-    }
-  }, [form, nameInSchema, prefix]);
+  const { control } = useFormContext();
+
+  const fieldTitleNoSpaces =
+    typeof fieldTitle === "string"
+      ? fieldTitle.replaceAll(" ", "-")
+      : nameInSchema;
 
   return (
-    <FormField
-      control={form.control}
+    <Controller
+      control={control}
       name={nameInSchema}
-      render={({ field }) => {
-        return (
-          <FormItem
-            className={clsx([
-              labelLeft ? "w-full flex items-center gap-2" : "",
-              className,
-            ])}
-          >
+      render={({ field: { ref, ...field }, fieldState: { error } }) => (
+        <FormControl
+          error={!!error}
+          className={className}
+          sx={{
+            display: labelLeft ? "flex" : "block",
+            flexDirection: labelLeft ? "row" : "column",
+            alignItems: labelLeft ? "center" : "stretch",
+            gap: labelLeft ? 2 : 1,
+            mb: 0.5,
+          }}
+        >
+          {fieldTitle && (
             <FormLabel
-              className={`text-sm ${labelLeft ? "w-1/3 mt-2" : ""}`}
               htmlFor={fieldTitleNoSpaces}
-              dangerouslySetInnerHTML={{ __html: fieldTitle }}
-            />
-
-            <div
-              className={`flex items-center gap-2 ${
-                labelLeft ? "w-2/3" : "w-full"
-              }`}
+              sx={{
+                fontSize: "0.875rem",
+                fontWeight: 600,
+                color: "text.primary",
+                mb: labelLeft ? 0 : 0.75,
+                width: labelLeft ? "33%" : "auto",
+                "& span": { color: "text.tertiary" },
+              }}
             >
-              <div className="w-full flex items-center rounded-md">
-                <FormControl>
-                  <Input
-                    {...field}
-                    id={fieldTitleNoSpaces}
-                    className={cn(
-                      "w-full py-5 text-lg placeholder:text-[14px] placeholder:text-[#B5B7C0] placeholder:font-normal text-[14px] shadow-none",
-                      form.formState.errors[nameInSchema] &&
-                        "border-[#F44336] focus-visible:outline-none focus-visible:ring-0"
-                    )}
-                    placeholder={placeholder || fieldTitle}
-                    readOnly={readOnly}
-                    disabled={readOnly}
-                    value={field.value}
-                    type={type}
-                    onKeyDown={onKeyDown}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value.startsWith(prefix)) {
-                        field.onChange(value);
-                      } else {
-                        field.onChange(prefix);
-                      }
-                    }}
-                  />
-                </FormControl>
-              </div>
-            </div>
+              <span dangerouslySetInnerHTML={{ __html: fieldTitle }} />
+            </FormLabel>
+          )}
 
-            <FormMessage className="text-[#D32F2F]" />
-          </FormItem>
-        );
-      }}
+          <StyledInput
+            {...field}
+            slotProps={{
+              input: {
+                ref,
+                id: fieldTitleNoSpaces,
+              },
+            }}
+            type={type}
+            placeholder={
+              placeholder ||
+              (typeof fieldTitle === "string"
+                ? `Nhập ${fieldTitle.toLowerCase()}`
+                : "")
+            }
+            readOnly={readOnly}
+            disabled={readOnly}
+            onKeyDown={onKeyDown}
+            sx={{
+              py: 1.25,
+              px: 1.5,
+              fontSize: "0.95rem",
+              flex: 1,
+            }}
+          />
+          {error && (
+            <FormHelperText
+              sx={{
+                fontSize: "0.75rem",
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+              }}
+            >
+              <AlertCircle size={14} />
+              {error.message}
+            </FormHelperText>
+          )}
+        </FormControl>
+      )}
     />
   );
 }

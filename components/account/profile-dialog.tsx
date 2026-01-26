@@ -1,15 +1,7 @@
 "use client";
 
 import FormDialog from "@/components/common/form-dialog";
-import {
-  Camera,
-  Edit,
-  IdCard,
-  Mail,
-  Phone,
-  Shield,
-  UserPen,
-} from "lucide-react";
+import { Camera, Shield, UserPen } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import UpdatePasswordDialog from "./update-password-dialog";
@@ -20,6 +12,9 @@ import {
   FormLabel,
   Input,
   Textarea,
+  Typography,
+  Box,
+  Stack,
 } from "@mui/joy";
 
 interface ProfileDialogProps {
@@ -52,132 +47,193 @@ export default function ProfileDialog({ open, onClose }: ProfileDialogProps) {
         open={open}
         onOpenChange={(isOpen) => !isOpen && onClose()}
         title={
-          <div className="flex items-center gap-3">
-            <UserPen className="text-primary w-6 h-6" />
-            <span className="text-xl font-bold font-sans tracking-tight text-foreground">
-              Edit Profile
-            </span>
-          </div>
+          <Stack direction="row" alignItems="center" spacing={1.5}>
+            <UserPen className="text-[var(--joy-palette-primary-500)]" />
+            <Typography level="h4" sx={{ fontWeight: 700 }}>
+              Chỉnh sửa thông tin
+            </Typography>
+          </Stack>
         }
-        primaryActionLabel="Save Changes"
-        cancelActionLabel="Cancel"
+        primaryActionLabel="Lưu thay đổi"
+        cancelActionLabel="Hủy"
         onPrimaryAction={handleSave}
         onCancel={onClose}
-        contentClassName="!w-[800px] bg-card text-card-foreground"
+        contentClassName="!w-[800px]"
       >
-        <div className="flex flex-col gap-8">
+        <Stack spacing={4}>
           {/* Avatar Section */}
-          <div className="flex flex-col items-center">
-            <div className="relative group cursor-pointer">
-              <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-muted shadow-lg relative">
+          <Box sx={{ textAlign: "center" }}>
+            <Box sx={{ position: "relative", display: "inline-block" }}>
+              <Box
+                sx={{
+                  width: 120,
+                  height: 120,
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  border: "4px solid",
+                  borderColor: "background.level1",
+                  boxShadow: "md",
+                  position: "relative",
+                  "&:hover .avatar-overlay": { opacity: 1 },
+                }}
+              >
                 <Image
                   alt="Profile picture"
                   src="/images/logo-bg.jpg"
                   fill
                   className="object-cover"
                 />
-              </div>
-              <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <Camera className="text-white w-8 h-8" />
-              </div>
-            </div>
-            <div className="mt-4 text-center">
-              <h3 className="text-2xl font-bold font-sans text-foreground">
+                <Box
+                  className="avatar-overlay"
+                  sx={{
+                    position: "absolute",
+                    inset: 0,
+                    bgcolor: "rgba(0,0,0,0.5)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    opacity: 0,
+                    transition: "opacity 0.2s",
+                    cursor: "pointer",
+                  }}
+                >
+                  <Camera className="text-white" size={24} />
+                </Box>
+              </Box>
+            </Box>
+            <Box sx={{ mt: 2 }}>
+              <Typography level="h3" sx={{ fontWeight: 800 }}>
                 Alex Mercer
-              </h3>
-              <p className="text-muted-foreground text-sm">
+              </Typography>
+              <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
                 Product Designer @ ThinkTalk
-              </p>
-            </div>
-          </div>
+              </Typography>
+            </Box>
+          </Box>
 
           {/* Form Fields Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Display Name */}
-            {/* Display Name */}
+          <Box className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormControl>
-              <FormLabel>Display Name</FormLabel>
+              <FormLabel>Tên hiển thị</FormLabel>
               <Input
-                placeholder="Enter your name"
-                type="text"
+                placeholder="Nhập tên của bạn"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
+                sx={{ borderRadius: "12px" }}
               />
             </FormControl>
 
-            {/* Email */}
-            {/* Email */}
             <FormControl>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Số điện thoại</FormLabel>
               <Input
-                placeholder="Email"
-                type="email"
+                placeholder="Nhập số điện thoại"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
+                sx={{ borderRadius: "12px" }}
               />
             </FormControl>
 
-            {/* Bio (Full Width) */}
-            {/* Bio (Full Width) */}
             <FormControl className="md:col-span-2">
-              <FormLabel>Bio</FormLabel>
+              <FormLabel>Giới thiệu bản thân</FormLabel>
               <Textarea
-                placeholder="Write a short bio about yourself..."
+                placeholder="Kể một chút về bạn..."
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 minRows={3}
                 maxRows={5}
+                sx={{ borderRadius: "12px" }}
               />
-              <p className="text-xs text-right text-muted-foreground mt-2">
-                {240 - bio.length} characters left
-              </p>
+              <Typography
+                level="body-xs"
+                sx={{ textAlign: "right", mt: 1, color: "text.tertiary" }}
+              >
+                Còn lại {240 - bio.length} ký tự
+              </Typography>
             </FormControl>
-          </div>
+          </Box>
 
           {/* Security Section */}
-          <div className="border-t border-border pt-6">
-            <h4 className="text-lg font-bold mb-4 flex items-center gap-2 text-foreground">
-              <Shield className="text-primary w-6 h-6" />
-              Security & Privacy
-            </h4>
-            <div className="grid gap-4">
+          <Box sx={{ borderTop: "1px solid", borderColor: "divider", pt: 3 }}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={1}
+              sx={{ mb: 2 }}
+            >
+              <Shield
+                className="text-[var(--joy-palette-primary-500)]"
+                size={20}
+              />
+              <Typography level="title-md" sx={{ fontWeight: 700 }}>
+                Bảo mật & Quyền riêng tư
+              </Typography>
+            </Stack>
+
+            <Stack spacing={2}>
               {/* 2FA Toggle */}
-              <div className="flex items-center justify-between p-4 rounded-lg bg-muted border border-border">
-                <div className="flex flex-col">
-                  <span className="font-medium text-foreground">
-                    2-Step Verification
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    Add an extra layer of security to your account.
-                  </span>
-                </div>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  p: 2,
+                  borderRadius: "16px",
+                  bgcolor: "background.level1",
+                  border: "1px solid",
+                  borderColor: "divider",
+                }}
+              >
+                <Box>
+                  <Typography level="title-sm" sx={{ fontWeight: 600 }}>
+                    Xác thực 2 yếu tố
+                  </Typography>
+                  <Typography level="body-xs" sx={{ color: "text.tertiary" }}>
+                    Thêm một lớp bảo mật cho tài khoản của bạn.
+                  </Typography>
+                </Box>
                 <Checkbox
                   checked={is2FAEnabled}
                   onChange={(e) => setIs2FAEnabled(e.target.checked)}
                   variant="solid"
                   color="primary"
+                  sx={{ "--Checkbox-size": "20px" }}
                 />
-              </div>
+              </Box>
+
               {/* Change Password */}
-              <div className="flex items-center justify-between p-4 rounded-lg bg-muted border border-border">
-                <div className="flex flex-col">
-                  <span className="font-medium text-foreground">Password</span>
-                  <span className="text-sm text-muted-foreground">
-                    Last changed 3 months ago
-                  </span>
-                </div>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  p: 2,
+                  borderRadius: "16px",
+                  bgcolor: "background.level1",
+                  border: "1px solid",
+                  borderColor: "divider",
+                }}
+              >
+                <Box>
+                  <Typography level="title-sm" sx={{ fontWeight: 600 }}>
+                    Mật khẩu
+                  </Typography>
+                  <Typography level="body-xs" sx={{ color: "text.tertiary" }}>
+                    Thay đổi mật khẩu định kỳ để an toàn hơn.
+                  </Typography>
+                </Box>
                 <Button
                   onClick={() => setOpenUpdatePassword(true)}
                   variant="outlined"
                   color="neutral"
                   size="sm"
+                  sx={{ borderRadius: "10px", fontWeight: 600 }}
                 >
-                  Update
+                  Cập nhật
                 </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+              </Box>
+            </Stack>
+          </Box>
+        </Stack>
       </FormDialog>
     </>
   );

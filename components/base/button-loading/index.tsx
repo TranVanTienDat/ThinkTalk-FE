@@ -1,8 +1,11 @@
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { IconButton, IconButtonProps } from "@mui/joy";
+import {
+  IconButton,
+  IconButtonProps,
+  Button,
+  CircularProgress,
+} from "@mui/joy";
 
-import clsx from "clsx";
 import { LoaderCircleIcon, LucideProps } from "lucide-react";
 import React, { ForwardRefExoticComponent, RefAttributes } from "react";
 
@@ -14,8 +17,8 @@ export const LoadingSnipper = ({
   iconClass?: string;
 }) => {
   return (
-    <div className={clsx("flex items-center justify-center p-4", className)}>
-      <LoaderCircleIcon className={clsx("animate-spin", iconClass)} />
+    <div className={cn("flex items-center justify-center p-4", className)}>
+      <LoaderCircleIcon className={cn("animate-spin", iconClass)} />
     </div>
   );
 };
@@ -24,26 +27,42 @@ type Props = {
   title: string;
   isLoading: boolean;
   className?: string;
-  classNameLoading?: string;
-  type: "button" | "submit" | "reset";
+  type?: "button" | "submit" | "reset";
   action?: () => void;
+  size?: "sm" | "md" | "lg";
+  variant?: "solid" | "outlined" | "plain" | "soft";
+  color?: "primary" | "neutral" | "danger" | "success" | "warning";
 };
+
 export const ButtonLoading = ({
   title,
   isLoading,
   className,
-  classNameLoading,
   type = "button",
   action,
+  size = "md",
+  variant = "solid",
+  color = "primary",
 }: Props) => {
   return (
     <Button
-      disabled={isLoading}
+      loading={isLoading}
       type={type}
-      className={cn("bg-primary w-32 rounded px-3", className)}
+      className={className}
       onClick={action}
+      size={size}
+      variant={variant}
+      color={color}
+      sx={{ borderRadius: "12px" }}
+      loadingIndicator={
+        <CircularProgress
+          variant="solid"
+          thickness={2}
+          sx={{ "--CircularProgress-size": "20px" }}
+        />
+      }
     >
-      {isLoading ? <LoadingSnipper className={classNameLoading} /> : title}
+      {title}
     </Button>
   );
 };
@@ -56,15 +75,23 @@ type ButtonIconCustomizeProps = {
   colorIcon?: string;
   handleOnClick?: () => void;
 } & IconButtonProps;
+
 export const IconButtonCustomize = ({
   icon,
-  sizeIcon,
+  sizeIcon = 20,
   colorIcon,
   handleOnClick,
   ...restProps
 }: ButtonIconCustomizeProps) => {
   return (
-    <IconButton {...restProps} onClick={handleOnClick}>
+    <IconButton
+      {...restProps}
+      onClick={handleOnClick}
+      sx={{
+        borderRadius: "50%",
+        ...restProps.sx,
+      }}
+    >
       {React.createElement(icon, {
         color: colorIcon,
         size: sizeIcon,

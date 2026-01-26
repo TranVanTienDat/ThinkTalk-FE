@@ -1,34 +1,39 @@
-import { Box, Sheet } from "@mui/joy";
+import { Box, Sheet, useTheme } from "@mui/joy";
 
 export const AuthWrap = ({ children }: { children: React.ReactNode }) => {
+  const theme = useTheme();
+
   return (
     <Sheet
       sx={{
         backgroundImage: `url(/images/bgs/bg-auth.jpg)`,
         backgroundSize: "cover",
-        height: "100%",
-        position: "relative",
+        backgroundPosition: "center",
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: { xs: "center", sm: "flex-end" },
+        px: { xs: 2, sm: "15%" },
+        py: 4,
+        overflowY: "auto",
       }}
     >
       <Box
         sx={{
-          width: "400px",
-          backgroundColor: "white",
-          position: "absolute",
-          top: "50%",
-          left: { xs: "50%", sm: "auto" },
-          right: { xs: "auto", sm: "20%" },
-          transform: {
-            xs: "translate(-50%, -50%)",
-            sm: "translateY(-50%)",
-          },
-          boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
-          borderRadius: "16px",
-          padding: "16px",
+          width: "100%",
+          maxWidth: "420px",
+          backgroundColor: "background.surface",
+          boxShadow: theme.vars.shadow.xl,
+          borderRadius: "24px",
+          p: { xs: 3, sm: 4 },
+          position: "relative",
+          zIndex: 1,
+          border: "1px solid",
+          borderColor: "divider",
         }}
       >
         {children}
-      </Box>{" "}
+      </Box>
     </Sheet>
   );
 };

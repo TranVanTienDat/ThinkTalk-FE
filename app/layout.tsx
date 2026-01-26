@@ -1,4 +1,3 @@
-import { Toaster } from "@/components/ui/toaster";
 import { TanstackQueryIniter } from "@/context/query-client";
 import type { Metadata } from "next";
 import "./globals.css";
@@ -21,15 +20,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning={true}>
-      <body className="h-screen">
+      <body className="h-screen overflow-hidden">
         <InitColorSchemeScript />
         <SessionProvider>
-        <TanstackQueryIniter>
-          <ThemeRegistry options={{ key: "joy" }}>
-            {children}
-            <Toaster />
-          </ThemeRegistry>
-        </TanstackQueryIniter>
+          <TanstackQueryIniter>
+            <ThemeRegistry options={{ key: "joy" }}>{children}</ThemeRegistry>
+          </TanstackQueryIniter>
         </SessionProvider>
       </body>
     </html>

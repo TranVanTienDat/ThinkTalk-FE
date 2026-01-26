@@ -1,38 +1,49 @@
 "use client";
-import { Form } from "@/components/ui/form";
 import useDocumentTitle from "@/hooks/use-document-title";
 import { useNotification } from "@/hooks/use-notification";
 import { DeviceType } from "@/types";
 import { getDevice } from "@/utils/getDevice";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@mui/joy";
-import { signIn } from "next-auth/react";
+import {
+  Box,
+  Button,
+  Divider,
+  Link as JoyLink,
+  Stack,
+  Typography,
+  useTheme,
+} from "@mui/joy";
 import Cookies from "js-cookie";
+import { signIn } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { AuthWrap } from "../_components/auth-wrap";
 import { GoogleIcon } from "../_components/google-icon";
 import { InputWithLabel } from "../_components/input-with-label";
+
 const formSchema = z.object({
-  // fullname: z.string().min(2, {
-  //   message: "Có vẻ như tên của bạn quá ngắn",
-  // }),
   email: z.string().email({ message: "Email không hợp lệ" }),
   password: z.string().min(5, {
     message: "Mật khẩu phải có ít nhất 5 ký tự",
   }),
 });
 
-export default function Page() {
-  useDocumentTitle("Đăng nhập");
+type FormValues = z.infer<typeof formSchema>;
+
+export default function LoginPage() {
+  useDocumentTitle("Đăng nhập | ThinkTalk");
+  const theme = useTheme();
+  const router = useRouter();
   const { contextHolder, openNotification } = useNotification();
+
   const [device, setDevice] = useState<DeviceType | null>(null);
   const [loading, setLoading] = useState(false);
+
   useEffect(() => {
-    // Chỉ chạy trên client-side
     if (typeof window !== "undefined") {
       import("device-uuid").then(({ DeviceUUID }) => {
         const du = new DeviceUUID().parse();
@@ -51,7 +62,7 @@ export default function Page() {
     }
   }, []);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
@@ -59,101 +70,163 @@ export default function Page() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: FormValues) {
     if (!device?.type || !device?.device_token) return;
     try {
       const { email, password } = values;
       setLoading(true);
-      await signIn("credentials", {
+      const result = await signIn("credentials", {
         email,
         password,
         type: device.type,
         device_token: device.device_token,
         info: JSON.stringify(device.info),
         typeAuth: "login",
-        redirectTo: "/workspace",
-        redirect: true,
+        redirect: false,
       });
+
+      if (result?.error) {
+        openNotification({
+          title: "Đăng nhập thất bại",
+          description: result.error,
+          type: "error",
+        });
+      } else {
+        router.push("/workspace");
+      }
     } catch (error: any) {
       openNotification({
         title: "Đăng nhập thất bại",
-        description: error?.data?.message || error?.message,
+        description:
+          error?.data?.message || error?.message || "Đã có lỗi xảy ra",
+        type: "error",
       });
     } finally {
       setLoading(false);
     }
   }
 
-  const handleSign = async () => {
+  const handleGoogleSign = async () => {
     if (!device?.type || !device?.device_token) return;
     Cookies.set("device", JSON.stringify(device), { expires: 1 });
     await signIn("google", {
-      redirectTo: "/workspace",
+      callbackUrl: "/workspace",
     });
   };
 
   return (
     <AuthWrap>
       {contextHolder}
-      <div className="pt-4 pb-10">
-        <h1 className="pb-3 font-bold text-3xl flex gap-3">
-          Welcome back{" "}
-          <Image src="/images/icon.png" alt="Logo" width={38} height={38} />{" "}
-        </h1>
-        <p className="text-base">We are happy to have you back 👋</p>
-      </div>
-
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <Box sx={{ mb: 4 }}>
+        <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1 }}>
+          <Typography level="h2" sx={{ fontWeight: 800, fontSize: "1.875rem" }}>
+            Welcome back
+          </Typography>
+          <Image src="/images/icon.png" alt="Logo" width={32} height={32} />
+        </Stack>
+        <Typography
+          level="body-md"
+          sx={{ color: "text.secondary", fontWeight: 500 }}
+        >
+          ThinkTalk - Kết nối và chia sẻ không giới hạn 👋
+        </Typography>
+      </Box>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <Stack spacing={2.5}>
           <InputWithLabel
-            placeholder="Nhập email của bạn"
+            placeholder="name@company.com"
             fieldTitle="Email"
             nameInSchema="email"
           />
-          <InputWithLabel
-            placeholder="Nhập password của bạn"
-            fieldTitle="Password"
-            nameInSchema="password"
-          />
+          <Box>
+            <InputWithLabel
+              placeholder="••••••••"
+              fieldTitle="Mật khẩu"
+              nameInSchema="password"
+              type="password"
+            />
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mt: -1 }}>
+              <JoyLink
+                component={Link}
+                href="/forgot-password"
+                level="body-xs"
+                sx={{ fontWeight: 600 }}
+              >
+                Quên mật khẩu?
+              </JoyLink>
+            </Box>
+          </Box>
 
-          <div className="text-right">
-            <Button variant="solid" loading={loading} type="submit">
-              Đăng nhập
-            </Button>
-          </div>
-        </form>
-      </Form>
-      <div className="text-right mt-3 text-sm ">
-        Chưa có tài khoản?
-        <Link className="text-[#615EF0] text-sm ml-2" href={"/register"}>
-          đăng kí ngay
-        </Link>
-      </div>
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center" aria-hidden="true">
-          <div className="w-full border-t border-gray-300" />
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-gray-500">Hoặc tiếp tục với</span>
-        </div>
-      </div>
+          <Button
+            type="submit"
+            loading={loading}
+            size="lg"
+            sx={{
+              borderRadius: "12px",
+              py: 1.5,
+              fontWeight: 700,
+              fontSize: "1rem",
+              boxShadow: theme.vars.shadow.md,
+              "&:hover": {
+                transform: "translateY(-2px)",
+                boxShadow: theme.vars.shadow.lg,
+              },
+            }}
+          >
+            Đăng nhập
+          </Button>
+        </Stack>
+      </form>
+
+      <Box sx={{ my: 4, position: "relative" }}>
+        <Divider sx={{ zIndex: 0 }}>
+          <Typography
+            level="body-xs"
+            sx={{
+              px: 2,
+              bgcolor: "background.surface",
+              fontWeight: 600,
+              color: "text.tertiary",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+            }}
+          >
+            Hoặc tiếp tục với
+          </Typography>
+        </Divider>
+      </Box>
 
       <Button
         variant="outlined"
+        color="neutral"
         fullWidth
+        size="lg"
+        type="button"
         startDecorator={<GoogleIcon />}
         sx={{
-          color: "black",
-          borderColor: "#E0E0E0",
+          borderRadius: "12px",
+          fontWeight: 600,
+          border: "1px solid",
+          borderColor: "neutral.outlinedBorder",
           "&:hover": {
-            borderColor: "#BDBDBD",
-            backgroundColor: "#F5F5F5",
+            bgcolor: "neutral.softBg",
+            borderColor: "neutral.outlinedHoverBorder",
           },
         }}
-        onClick={handleSign}
+        onClick={handleGoogleSign}
       >
         Đăng nhập bằng Google
       </Button>
+
+      <Typography
+        level="body-sm"
+        sx={{ textAlign: "center", mt: 4, fontWeight: 500 }}
+      >
+        Chưa có tài khoản?{" "}
+        <JoyLink component={Link} href="/register" sx={{ fontWeight: 700 }}>
+          Đăng ký ngay
+        </JoyLink>
+      </Typography>
     </AuthWrap>
   );
 }

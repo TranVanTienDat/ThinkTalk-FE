@@ -20,13 +20,9 @@ import {
   useTheme,
 } from "@mui/joy";
 import { DeviceUUID } from "device-uuid";
-import {
-  SyntheticEvent,
-  useCallback,
-  useEffect,
+import { SyntheticEvent, useCallback, useState } from "react";
   useRef,
-  useState,
-} from "react";
+  useState } from "react";
 import Loading from "../Loading";
 
 export default function MenuAccount() {

@@ -11,7 +11,7 @@ const auth = {
       throw error;
     }
   },
-    loginWithGoogle: async (data: any): Promise<UserDetail | undefined> => {
+  loginWithGoogle: async (data: any): Promise<UserDetail | undefined> => {
     try {
       const res = await servicesApi.post("/auth/login-google", data);
       if (res?.statusCode === 200) return res.user;
