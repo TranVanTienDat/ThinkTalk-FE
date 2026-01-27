@@ -6,10 +6,9 @@ import {
   Input,
   FormHelperText,
   styled,
-  IconButton,
 } from "@mui/joy";
-import { HTMLInputTypeAttribute, KeyboardEventHandler, useState } from "react";
-import { Eye, EyeOff, AlertCircle } from "lucide-react";
+import { HTMLInputTypeAttribute, KeyboardEventHandler } from "react";
+import { AlertCircle } from "lucide-react";
 
 const StyledInput = styled(Input)(({ theme }) => ({
   "--Input-radius": "12px",

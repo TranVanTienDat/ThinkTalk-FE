@@ -20,9 +20,13 @@ import {
   useTheme,
 } from "@mui/joy";
 import { DeviceUUID } from "device-uuid";
-import { SyntheticEvent, useCallback, useState } from "react";
+import {
+  SyntheticEvent,
+  useCallback,
+  useState,
+  useEffect,
   useRef,
-  useState } from "react";
+} from "react";
 import Loading from "../Loading";
 
 export default function MenuAccount() {
@@ -67,7 +71,7 @@ export default function MenuAccount() {
       if (key === "setting" && !isOpen) return;
       setOpen(isOpen);
     },
-    [key]
+    [key],
   );
 
   return (

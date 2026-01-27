@@ -36,6 +36,7 @@
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
     "device-uuid": "^1.0.4",
+    "framer-motion": "^12.29.2",
     "idb-keyval": "^6.2.2",
     "js-cookie": "^3.0.5",
     "lucide": "^0.469.0",
