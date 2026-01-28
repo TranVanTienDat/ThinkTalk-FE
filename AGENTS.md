@@ -10,8 +10,8 @@ The system utilizes the latest technologies to ensure performance and scalabilit
 
 - **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **UI Libraries**: [shadcn/ui](https://ui.shadcn.com/) & [Radix UI](https://www.radix-ui.com/)
+- **Styling**: @Joy/mui
+- **UI Libraries**: @Joy UI/mui
 - **State Management**: [Zustand](https://github.com/pmndrs/zustand)
 - **Data Fetching**: [TanStack Query v5](https://tanstack.com/query/latest) & [Axios](https://axios-http.com/)
 - **Real-time**: [Socket.io](https://socket.io/)
